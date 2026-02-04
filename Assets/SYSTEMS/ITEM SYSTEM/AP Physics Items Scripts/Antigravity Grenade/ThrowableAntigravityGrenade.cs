@@ -22,6 +22,7 @@ public class ThrowableAntigravityGrenade : Item
 
     public override void UseItem()
     {
+
         if (grenadePrefab == null)
         {
             Debug.LogError("[ThrowableAntigravityGrenade] Grenade prefab is not assigned!");
