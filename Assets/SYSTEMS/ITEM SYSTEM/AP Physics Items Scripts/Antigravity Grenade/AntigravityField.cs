@@ -21,34 +21,31 @@ public class AntigravityField : MonoBehaviour
     public float angularDamping = 1.2f;
 
     [Header("WheelCollider Handling")]
-    [Tooltip("Instant upward velocity applied to break ground contact")]
     public float liftKickVelocity = 2.5f;
-
-    [Tooltip("Multiplier applied to suspension spring while inside field")]
     public float suspensionSoftening = 0.35f;
-
-    [Tooltip("Multiplier applied to wheel friction while inside field")]
     public float frictionSoftening = 0.4f;
 
     [Header("Gravity Return")]
     public float gravityRestoreTime = 1.5f;
 
-    [Header("Random Rotation")]
-    [Tooltip("How much torque to apply to objects caught in the field.")]
-    public float randomTorqueStrength = 1.5f;
+    [Header("Spawn Expansion VFX")]
+    [Tooltip("Optional visual object (mesh sphere, particle system root, VFX graph object, etc.)")]
+    public Transform vfxRoot;
 
-    [Tooltip("Random rotation speed cap to prevent crazy spinning.")]
-    public float maxAngularVelocity = 3.5f;
+    [Tooltip("Seconds it takes for the field to expand from 0 to full size")]
+    public float expandTime = 0.35f;
 
-    [Tooltip("Vehicles get less random torque than normal objects.")]
-    public float vehicleTorqueMultiplier = 0.25f;
+    [Tooltip("Expansion curve (0->1). Leave default for nice ease-in/out.")]
+    public AnimationCurve expandCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+    private SphereCollider sphereTrigger;
+
+    private float initialTriggerRadius;
+    private Vector3 initialVfxScale;
 
     // Internal state
     private HashSet<Rigidbody> affectedBodies = new HashSet<Rigidbody>();
     private Dictionary<Rigidbody, Coroutine> restoreRoutines = new Dictionary<Rigidbody, Coroutine>();
-
-    // Each RB gets a consistent random spin axis
-    private Dictionary<Rigidbody, Vector3> torqueAxes = new Dictionary<Rigidbody, Vector3>();
 
     private class WheelBackup
     {
@@ -61,9 +58,56 @@ public class AntigravityField : MonoBehaviour
     private Dictionary<Rigidbody, List<WheelBackup>> wheelData =
         new Dictionary<Rigidbody, List<WheelBackup>>();
 
+    private void Awake()
+    {
+        sphereTrigger = GetComponent<SphereCollider>();
+        if (sphereTrigger != null)
+            initialTriggerRadius = sphereTrigger.radius;
+
+        if (vfxRoot != null)
+            initialVfxScale = vfxRoot.localScale;
+    }
+
     private void Start()
     {
+        // Start collapsed then expand
+        StartCoroutine(ExpandFieldRoutine());
+
         Invoke(nameof(DisableField), duration);
+    }
+
+    private IEnumerator ExpandFieldRoutine()
+    {
+        // Collapse instantly first
+        if (sphereTrigger != null)
+            sphereTrigger.radius = 0f;
+
+        if (vfxRoot != null)
+            vfxRoot.localScale = Vector3.zero;
+
+        // Expand smoothly
+        float t = 0f;
+        while (t < expandTime)
+        {
+            t += Time.deltaTime;
+            float a = Mathf.Clamp01(t / expandTime);
+            float eased = expandCurve.Evaluate(a);
+
+            if (sphereTrigger != null)
+                sphereTrigger.radius = Mathf.Lerp(0f, initialTriggerRadius, eased);
+
+            if (vfxRoot != null)
+                vfxRoot.localScale = Vector3.Lerp(Vector3.zero, initialVfxScale, eased);
+
+            yield return null;
+        }
+
+        // Ensure final values
+        if (sphereTrigger != null)
+            sphereTrigger.radius = initialTriggerRadius;
+
+        if (vfxRoot != null)
+            vfxRoot.localScale = initialVfxScale;
     }
 
     private void FixedUpdate()
@@ -83,31 +127,6 @@ public class AntigravityField : MonoBehaviour
             adjustedPull = Mathf.Clamp(adjustedPull, 0f, maxUpwardAcceleration);
 
             rb.AddForce(Vector3.up * adjustedPull, ForceMode.Acceleration);
-
-            // ------------------ RANDOM ROTATION ------------------
-            if (randomTorqueStrength > 0f)
-            {
-                if (!torqueAxes.TryGetValue(rb, out Vector3 axis))
-                {
-                    axis = Random.onUnitSphere;
-                    torqueAxes[rb] = axis;
-                }
-
-                float torque = randomTorqueStrength;
-
-                // vehicles spin less
-                if (isVehicle)
-                    torque *= vehicleTorqueMultiplier;
-
-                rb.AddTorque(axis * torque, ForceMode.Acceleration);
-
-                // clamp spin
-                if (rb.angularVelocity.magnitude > maxAngularVelocity)
-                {
-                    rb.angularVelocity = rb.angularVelocity.normalized * maxAngularVelocity;
-                }
-            }
-            // -----------------------------------------------------
 
             if (isVehicle)
             {
@@ -130,10 +149,6 @@ public class AntigravityField : MonoBehaviour
         rb.useGravity = false;
         affectedBodies.Add(rb);
 
-        // Assign a stable random torque axis for this RB
-        if (!torqueAxes.ContainsKey(rb))
-            torqueAxes[rb] = Random.onUnitSphere;
-
         // Cancel restore if re-entering
         if (restoreRoutines.TryGetValue(rb, out Coroutine routine))
         {
@@ -144,8 +159,6 @@ public class AntigravityField : MonoBehaviour
         if (IsVehicle(rb))
         {
             ApplyVehicleOverrides(rb);
-
-            // Small vertical kick to break wheel-ground contact
             rb.AddForce(Vector3.up * liftKickVelocity, ForceMode.VelocityChange);
         }
     }
@@ -175,7 +188,6 @@ public class AntigravityField : MonoBehaviour
     private IEnumerator RestoreGravityAndVehicle(Rigidbody rb)
     {
         rb.useGravity = true;
-
         RestoreVehicleOverrides(rb);
 
         float t = 0f;
@@ -186,9 +198,6 @@ public class AntigravityField : MonoBehaviour
         }
 
         restoreRoutines.Remove(rb);
-
-        // cleanup torque axis when object exits
-        torqueAxes.Remove(rb);
     }
 
     // ---------------- VEHICLE HELPERS ----------------
