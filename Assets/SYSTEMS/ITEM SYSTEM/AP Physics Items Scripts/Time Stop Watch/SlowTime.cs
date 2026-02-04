@@ -1,33 +1,66 @@
+using System.Collections;
 using UnityEngine;
 using Cinemachine;
 
 public class SlowTime : Item
 {
     private float fixedDeltaTime;
+    
+    [Header("Slow Time Settings")]
+    public float slowTimeDuration = 5.0f;
+    public float slowTimeScale = 0.5f;
 
-    public CinemachineVirtualCamera carCam;
-    public CinemachineVirtualCamera closeCam;
+    private bool isActive = false;
+    private UseItemController itemController;
 
     void Awake()
     {
         this.fixedDeltaTime = Time.fixedDeltaTime;
     }
 
+    void Start()
+    {
+        // Find the UseItemController on the parent (player)
+        itemController = GetComponentInParent<UseItemController>();
+    }
+
     public override void UseItem()
     {
-        if (Time.timeScale == 1.0f)
+        // Prevent using if already active
+        if (isActive)
         {
-            Time.timeScale = 0.5f;
-            closeCam.Priority = 20;
-            carCam.Priority = 10;
-        }
-        else
-        {
-            Time.timeScale = 1.0f;
-            carCam.Priority = 20;
-            closeCam.Priority = 10;
+            Debug.Log("[SlowTime] Already active, cannot use again");
+            return;
         }
 
-        Time.fixedDeltaTime = this.fixedDeltaTime * Time.timeScale;
+        StartCoroutine(SlowTimeRoutine());
+    }
+
+    private IEnumerator SlowTimeRoutine()
+    {
+        isActive = true;
+
+        // Start slow time
+        Debug.Log("[SlowTime] Activating slow motion");
+        Time.timeScale = slowTimeScale;
+        Time.fixedDeltaTime = fixedDeltaTime * Time.timeScale;
+
+        // Wait for duration (in real time, not scaled time)
+        yield return new WaitForSecondsRealtime(slowTimeDuration);
+
+        // Restore normal time
+        Debug.Log("[SlowTime] Restoring normal time");
+        Time.timeScale = 1.0f;
+        Time.fixedDeltaTime = fixedDeltaTime;
+
+        // Remove this item from the active slot
+        if (itemController != null)
+        {
+            itemController.ActiveItem = null;
+            Debug.Log("[SlowTime] Removed from active item slot");
+        }
+
+        // Destroy this item instance
+        Destroy(gameObject);
     }
 }
