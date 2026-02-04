@@ -489,7 +489,7 @@
                     "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";Keyboard&Mouse;Gamepad",
+                    "groups": ";Keyboard&Mouse",
                     "action": "UseItem",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -497,10 +497,10 @@
                 {
                     "name": "",
                     "id": "4d8a1e76-1642-4561-808e-ec742868f2e3",
-                    "path": "",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Gamepad",
                     "action": "UseItem",
                     "isComposite": false,
                     "isPartOfComposite": false
