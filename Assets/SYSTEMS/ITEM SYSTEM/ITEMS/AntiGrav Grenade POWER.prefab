@@ -166,6 +166,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: AntiGrav Grenade
   grenadePrefab: {fileID: 4593255392985355286}
-  throwForce: 50
+  throwForce: 25
   throwOffset: {x: 0, y: 1, z: 2}
   inheritVehicleVelocity: 1

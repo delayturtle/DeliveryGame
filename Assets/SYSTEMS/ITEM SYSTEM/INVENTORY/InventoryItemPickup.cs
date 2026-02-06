@@ -61,6 +61,13 @@ public class InventoryItemPickup : MonoBehaviour
 
         Debug.Log($"[ItemPickup] Found UseItemController on {itemController.gameObject.name}");
 
+        // Check if player already has an item equipped
+        if (itemController.ActiveItem != null)
+        {
+            Debug.Log($"[ItemPickup] Player already has an item equipped: {itemController.ActiveItem.ItemName}. Cannot pick up {gameObject.name}.");
+            return;
+        }
+
         if (itemPrefab == null)
         {
             Debug.LogError($"[ItemPickup] {gameObject.name} - Item Prefab is not assigned!");
