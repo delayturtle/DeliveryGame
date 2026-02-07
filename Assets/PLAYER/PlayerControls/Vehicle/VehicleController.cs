@@ -33,14 +33,25 @@ public class VehicleController : MonoBehaviour
     public Color gizmoColor = Color.yellow;
     public float gizmoRadius = 0.2f;
 
+    [Header("Engine Audio")]
+    public AudioSource idleAudioSource;
+    public AudioSource drivingAudioSource;
+    public float minPitch = 0.8f;
+    public float maxPitch = 2.0f;
+    public float minSpeed = 0f;
+    public float maxSpeed = 30f;
+    public float idleThreshold = 0.5f; // Speed below which idle plays
+
     public List<Wheel> wheels = new List<Wheel>();
 
     float rawMoveInput;
     float rawSteerInput;
     float currentThrottle = 0f;
+    float previousInput = 0f;
 
     private Rigidbody carRb;
     private Vector3 lastAppliedCoM;
+    private bool isPlayingIdle = false;
 
     void Awake()
     {
@@ -50,6 +61,21 @@ public class VehicleController : MonoBehaviour
     void Start()
     {
         ApplyCenterOfMass();
+        
+        // Set up audio sources to loop
+        if (idleAudioSource != null)
+        {
+            idleAudioSource.loop = true;
+            idleAudioSource.Play();
+            isPlayingIdle = true;
+        }
+        
+        if (drivingAudioSource != null)
+        {
+            drivingAudioSource.loop = true;
+            drivingAudioSource.volume = 0f; // Start silent
+            drivingAudioSource.Play();
+        }
     }
 
     void OnValidate()
@@ -73,6 +99,8 @@ public class VehicleController : MonoBehaviour
             if (carRb != null && _centerOfMass != lastAppliedCoM)
                 ApplyCenterOfMass();
         }
+
+        UpdateEngineAudio();
     }
 
     void FixedUpdate()
@@ -83,11 +111,95 @@ public class VehicleController : MonoBehaviour
         UpdateWheelVisuals(); // keep visuals in sync with physics
     }
 
+    void UpdateEngineAudio()
+    {
+        if (carRb == null || (idleAudioSource == null && drivingAudioSource == null))
+            return;
+
+        float currentSpeed = carRb.linearVelocity.magnitude;
+
+        // Switch between idle and driving based on speed
+        if (currentSpeed < idleThreshold)
+        {
+            // Playing idle sound
+            if (!isPlayingIdle)
+            {
+                if (idleAudioSource != null)
+                    idleAudioSource.volume = Mathf.Lerp(idleAudioSource.volume, 1f, Time.deltaTime * 5f);
+                if (drivingAudioSource != null)
+                    drivingAudioSource.volume = Mathf.Lerp(drivingAudioSource.volume, 0f, Time.deltaTime * 5f);
+
+                if (idleAudioSource != null && idleAudioSource.volume > 0.9f)
+                    isPlayingIdle = true;
+            }
+            else
+            {
+                if (idleAudioSource != null)
+                    idleAudioSource.volume = 1f;
+                if (drivingAudioSource != null)
+                    drivingAudioSource.volume = 0f;
+            }
+        }
+        else
+        {
+            // Playing driving sound with dynamic pitch
+            if (isPlayingIdle)
+            {
+                if (idleAudioSource != null)
+                    idleAudioSource.volume = Mathf.Lerp(idleAudioSource.volume, 0f, Time.deltaTime * 5f);
+                if (drivingAudioSource != null)
+                    drivingAudioSource.volume = Mathf.Lerp(drivingAudioSource.volume, 1f, Time.deltaTime * 5f);
+
+                if (drivingAudioSource != null && drivingAudioSource.volume > 0.9f)
+                    isPlayingIdle = false;
+            }
+            else
+            {
+                if (idleAudioSource != null)
+                    idleAudioSource.volume = 0f;
+                if (drivingAudioSource != null)
+                    drivingAudioSource.volume = 1f;
+            }
+
+            // Adjust pitch based on speed
+            if (drivingAudioSource != null)
+            {
+                float speedFactor = Mathf.InverseLerp(minSpeed, maxSpeed, currentSpeed);
+                float targetPitch = Mathf.Lerp(minPitch, maxPitch, speedFactor);
+                drivingAudioSource.pitch = Mathf.Lerp(drivingAudioSource.pitch, targetPitch, Time.deltaTime * 3f);
+            }
+        }
+    }
+
     void UpdateThrottleSmoothing()
     {
         float target = rawMoveInput;
-        float responseRate = (Mathf.Abs(target) > Mathf.Abs(currentThrottle)) ? accelResponse : decelResponse;
-        currentThrottle = Mathf.MoveTowards(currentThrottle, target, responseRate * Time.fixedDeltaTime);
+        
+        // Detect direction change (opposite input from current throttle)
+        bool directionChanged = Mathf.Sign(target) != 0 && 
+                               Mathf.Sign(currentThrottle) != 0 && 
+                               Mathf.Sign(target) != Mathf.Sign(currentThrottle);
+        
+        // If direction changed, instantly zero throttle
+        if (directionChanged)
+        {
+            currentThrottle = 0f;
+            previousInput = target;
+            return;
+        }
+        
+        // If no input, decelerate faster
+        if (Mathf.Abs(target) < 0.01f)
+        {
+            currentThrottle = Mathf.MoveTowards(currentThrottle, 0f, decelResponse * Time.fixedDeltaTime);
+        }
+        else
+        {
+            float responseRate = (Mathf.Abs(target) > Mathf.Abs(currentThrottle)) ? accelResponse : decelResponse;
+            currentThrottle = Mathf.MoveTowards(currentThrottle, target, responseRate * Time.fixedDeltaTime);
+        }
+        
+        previousInput = target;
     }
 
     void Move()
@@ -116,6 +228,8 @@ public class VehicleController : MonoBehaviour
                 {
                     brake = maxBrakeTorque;
                     motor = 0f;
+                    // Instantly kill throttle when braking against motion
+                    currentThrottle = 0f;
                 }
                 else
                 {
@@ -137,6 +251,8 @@ public class VehicleController : MonoBehaviour
                 {
                     motor = 0f;
                     brake = maxBrakeTorque;
+                    // Ensure throttle is zero when braking
+                    currentThrottle = 0f;
                 }
                 else
                 {

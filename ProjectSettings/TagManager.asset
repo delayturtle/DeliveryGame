@@ -9,6 +9,7 @@ TagManager:
   - PhysicsObject
   - Tool
   - Item
+  - Bumper
   layers:
   - Default
   - TransparentFX
@@ -16,7 +17,7 @@ TagManager:
   - Vehicle
   - Water
   - UI
-  - 
+  - Package
   - 
   - 
   - 

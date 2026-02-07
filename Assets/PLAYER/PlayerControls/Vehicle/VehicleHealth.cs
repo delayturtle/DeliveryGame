@@ -26,6 +26,12 @@ public class VehicleHealth : MonoBehaviour
     private float lastDamageTime = -10f;
     private bool isDead = false;
 
+    [Header("Damage Audio")]
+    public AudioSource damageAudioSource;
+    public AudioClip damageSound1;
+    public AudioClip damageSound2;
+    public AudioClip damageSound3;
+
     [Header("Death behaviour (assign in Inspector)")]
     [Tooltip("GameObject to disable when health reaches zero (e.g. the intact car model)")]
     public GameObject objectToDisableOnDeath;
@@ -83,10 +89,50 @@ public class VehicleHealth : MonoBehaviour
 
         Debug.Log($"Took {amount} damage. Health: {currentHealth}/{maxHealth}");
 
+        // Play random damage sound
+        PlayRandomDamageSound();
+
         if (currentHealth <= 0)
         {
             Die();
         }
+    }
+
+    void PlayRandomDamageSound()
+    {
+        if (damageAudioSource == null)
+        {
+            Debug.LogWarning("[VehicleHealth] No AudioSource assigned for damage sounds!");
+            return;
+        }
+
+        // Collect available damage sounds
+        AudioClip[] damageSounds = new AudioClip[] { damageSound1, damageSound2, damageSound3 };
+        
+        // Filter out null clips
+        int availableSounds = 0;
+        for (int i = 0; i < damageSounds.Length; i++)
+        {
+            if (damageSounds[i] != null)
+                availableSounds++;
+        }
+
+        if (availableSounds == 0)
+        {
+            Debug.LogWarning("[VehicleHealth] No damage sound clips assigned!");
+            return;
+        }
+
+        // Pick a random non-null sound
+        AudioClip selectedClip = null;
+        while (selectedClip == null)
+        {
+            int randomIndex = Random.Range(0, damageSounds.Length);
+            selectedClip = damageSounds[randomIndex];
+        }
+
+        // Play the selected sound
+        damageAudioSource.PlayOneShot(selectedClip);
     }
 
     void Die()
