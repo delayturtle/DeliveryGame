@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class VehicleController : MonoBehaviour
 {
@@ -24,8 +25,6 @@ public class VehicleController : MonoBehaviour
     public float maxBrakeTorque = 8000f;
     public float accelResponse = 6f;
     public float decelResponse = 12f;
-    public bool brakeOnReverseInput = true;
-    public KeyCode brakeKey = KeyCode.None;
     public float turnSensitivity = 1.0f;
     public float maxSteeringAngle = 30.0f;
 
@@ -44,8 +43,10 @@ public class VehicleController : MonoBehaviour
 
     public List<Wheel> wheels = new List<Wheel>();
 
-    float rawMoveInput;
-    float rawSteerInput;
+    private InputAction accelerateAction;
+    private InputAction reverseAction;
+    private InputAction steerAction;
+    
     float currentThrottle = 0f;
 
     private Rigidbody carRb;
@@ -60,6 +61,18 @@ public class VehicleController : MonoBehaviour
     void Start()
     {
         ApplyCenterOfMass();
+        
+        // Get input actions from the new Input System
+        accelerateAction = InputSystem.actions.FindAction("Accelerate");
+        reverseAction = InputSystem.actions.FindAction("Reverse");
+        steerAction = InputSystem.actions.FindAction("Steer");
+        
+        if (accelerateAction == null)
+            Debug.LogWarning("[VehicleController] 'Accelerate' input action not found!");
+        if (reverseAction == null)
+            Debug.LogWarning("[VehicleController] 'Reverse' input action not found!");
+        if (steerAction == null)
+            Debug.LogWarning("[VehicleController] 'Steer' input action not found!");
         
         // Set up audio sources to loop
         if (idleAudioSource != null)
@@ -89,9 +102,6 @@ public class VehicleController : MonoBehaviour
 
     void Update()
     {
-        rawMoveInput = Input.GetAxis("Vertical");
-        rawSteerInput = Input.GetAxis("Horizontal");
-
         if (Application.isPlaying)
         {
             if (carRb == null) carRb = GetComponent<Rigidbody>();
@@ -172,7 +182,12 @@ public class VehicleController : MonoBehaviour
 
     void UpdateThrottleSmoothing()
     {
-        float target = rawMoveInput;
+        // Read separate forward/backward inputs from NEW Input System
+        float accelerateInput = accelerateAction != null ? accelerateAction.ReadValue<float>() : 0f;
+        float reverseInput = reverseAction != null ? reverseAction.ReadValue<float>() : 0f;
+        
+        // Combine into single throttle value (forward positive, reverse negative)
+        float target = accelerateInput - reverseInput;
         
         // If no input, decelerate faster
         if (Mathf.Abs(target) < 0.01f)
@@ -193,20 +208,19 @@ public class VehicleController : MonoBehaviour
         if (carRb == null) return;
 
         float forwardVel = Vector3.Dot(carRb.linearVelocity, transform.forward);
-        bool explicitBrakePressed = (brakeKey != KeyCode.None) && Input.GetKey(brakeKey);
+        
+        // Read inputs from NEW Input System
+        float accelerateInput = accelerateAction != null ? accelerateAction.ReadValue<float>() : 0f;
+        float reverseInput = reverseAction != null ? reverseAction.ReadValue<float>() : 0f;
 
-        // Determine if we should brake: moving forward (>1 m/s) and pressing back
-        bool shouldBrake = brakeOnReverseInput && 
-                          rawMoveInput < -0.1f && 
-                          forwardVel > 1f;
+        // Determine if we should brake: moving forward and pressing reverse
+        bool shouldBrake = reverseInput > 0.1f && forwardVel > 1f;
 
-        // Determine if we should brake when reversing: moving backward and pressing forward
-        bool shouldBrakeReverse = brakeOnReverseInput &&
-                                 rawMoveInput > 0.1f &&
-                                 forwardVel < -1f;
+        // Determine if we should brake when reversing: moving backward and pressing accelerate
+        bool shouldBrakeReverse = accelerateInput > 0.1f && forwardVel < -1f;
 
         // Zero throttle if ANY braking is happening
-        if (shouldBrake || shouldBrakeReverse || explicitBrakePressed)
+        if (shouldBrake || shouldBrakeReverse)
         {
             currentThrottle = 0f;
         }
@@ -218,20 +232,14 @@ public class VehicleController : MonoBehaviour
             float motor = 0f;
             float brake = 0f;
 
-            // BRAKING when moving forward and pressing back
+            // BRAKING when moving forward and pressing reverse
             if (shouldBrake)
             {
                 motor = 0f;
                 brake = maxBrakeTorque;
             }
-            // BRAKING when moving backward and pressing forward
+            // BRAKING when moving backward and pressing accelerate
             else if (shouldBrakeReverse)
-            {
-                motor = 0f;
-                brake = maxBrakeTorque;
-            }
-            // EXPLICIT BRAKE KEY
-            else if (explicitBrakePressed)
             {
                 motor = 0f;
                 brake = maxBrakeTorque;
@@ -264,6 +272,9 @@ public class VehicleController : MonoBehaviour
 
     void Steer()
     {
+        // Read from NEW Input System
+        float rawSteerInput = steerAction != null ? steerAction.ReadValue<float>() : 0f;
+        
         float steerAngle = rawSteerInput * turnSensitivity * maxSteeringAngle;
         if (carRb != null)
         {
