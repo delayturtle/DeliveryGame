@@ -47,7 +47,6 @@ public class VehicleController : MonoBehaviour
     float rawMoveInput;
     float rawSteerInput;
     float currentThrottle = 0f;
-    float previousInput = 0f;
 
     private Rigidbody carRb;
     private Vector3 lastAppliedCoM;
@@ -175,19 +174,6 @@ public class VehicleController : MonoBehaviour
     {
         float target = rawMoveInput;
         
-        // Detect direction change (opposite input from current throttle)
-        bool directionChanged = Mathf.Sign(target) != 0 && 
-                               Mathf.Sign(currentThrottle) != 0 && 
-                               Mathf.Sign(target) != Mathf.Sign(currentThrottle);
-        
-        // If direction changed, instantly zero throttle
-        if (directionChanged)
-        {
-            currentThrottle = 0f;
-            previousInput = target;
-            return;
-        }
-        
         // If no input, decelerate faster
         if (Mathf.Abs(target) < 0.01f)
         {
@@ -195,11 +181,10 @@ public class VehicleController : MonoBehaviour
         }
         else
         {
+            // Smooth throttle response
             float responseRate = (Mathf.Abs(target) > Mathf.Abs(currentThrottle)) ? accelResponse : decelResponse;
             currentThrottle = Mathf.MoveTowards(currentThrottle, target, responseRate * Time.fixedDeltaTime);
         }
-        
-        previousInput = target;
     }
 
     void Move()
@@ -210,6 +195,22 @@ public class VehicleController : MonoBehaviour
         float forwardVel = Vector3.Dot(carRb.linearVelocity, transform.forward);
         bool explicitBrakePressed = (brakeKey != KeyCode.None) && Input.GetKey(brakeKey);
 
+        // Determine if we should brake: moving forward (>1 m/s) and pressing back
+        bool shouldBrake = brakeOnReverseInput && 
+                          rawMoveInput < -0.1f && 
+                          forwardVel > 1f;
+
+        // Determine if we should brake when reversing: moving backward and pressing forward
+        bool shouldBrakeReverse = brakeOnReverseInput &&
+                                 rawMoveInput > 0.1f &&
+                                 forwardVel < -1f;
+
+        // Zero throttle if ANY braking is happening
+        if (shouldBrake || shouldBrakeReverse || explicitBrakePressed)
+        {
+            currentThrottle = 0f;
+        }
+
         foreach (var w in wheels)
         {
             if (w.wheelCollider == null) continue;
@@ -217,48 +218,43 @@ public class VehicleController : MonoBehaviour
             float motor = 0f;
             float brake = 0f;
 
-            if (Mathf.Abs(currentThrottle) > 0.001f)
+            // BRAKING when moving forward and pressing back
+            if (shouldBrake)
             {
-                bool reversingAgainstMotion = brakeOnReverseInput &&
-                    Mathf.Sign(currentThrottle) != 0f &&
-                    Mathf.Sign(currentThrottle) != Mathf.Sign(forwardVel) &&
-                    Mathf.Abs(forwardVel) > 0.5f;
-
-                if (reversingAgainstMotion)
+                motor = 0f;
+                brake = maxBrakeTorque;
+            }
+            // BRAKING when moving backward and pressing forward
+            else if (shouldBrakeReverse)
+            {
+                motor = 0f;
+                brake = maxBrakeTorque;
+            }
+            // EXPLICIT BRAKE KEY
+            else if (explicitBrakePressed)
+            {
+                motor = 0f;
+                brake = maxBrakeTorque;
+            }
+            // NORMAL DRIVING: Apply throttle
+            else if (Mathf.Abs(currentThrottle) > 0.001f)
+            {
+                if (w.isDriven)
                 {
-                    brake = maxBrakeTorque;
-                    motor = 0f;
-                    // Instantly kill throttle when braking against motion
-                    currentThrottle = 0f;
+                    motor = currentThrottle * maxMotorTorque;
+                    brake = 0f;
                 }
                 else
                 {
-                    if (w.isDriven)
-                    {
-                        motor = currentThrottle * maxMotorTorque;
-                        brake = 0f;
-                    }
-                    else
-                    {
-                        motor = 0f;
-                        brake = 0f;
-                    }
+                    motor = 0f;
+                    brake = 0f;
                 }
             }
+            // NO INPUT - COAST
             else
             {
-                if (explicitBrakePressed)
-                {
-                    motor = 0f;
-                    brake = maxBrakeTorque;
-                    // Ensure throttle is zero when braking
-                    currentThrottle = 0f;
-                }
-                else
-                {
-                    motor = 0f;
-                    brake = 0f; // coast
-                }
+                motor = 0f;
+                brake = 0f;
             }
 
             w.wheelCollider.motorTorque = motor;
@@ -318,7 +314,7 @@ public class VehicleController : MonoBehaviour
             lastAppliedCoM = _centerOfMass;
         }
     }
-
+    
     void OnDrawGizmosSelected()
     {
         Vector3 worldCoM;
