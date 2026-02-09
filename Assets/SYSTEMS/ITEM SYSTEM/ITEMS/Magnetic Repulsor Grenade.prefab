@@ -167,3 +167,40 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+<<<<<<< Updated upstream:Assets/SYSTEMS/ITEM SYSTEM/ITEMS/Magnetic Repulsor Grenade.prefab
+=======
+--- !u!114 &3135227788532275563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593255392985355286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b960a099ec810142acf17b1cb468ca7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  antigravityFieldPrefab: {fileID: 8245988543882584955, guid: 000e078c9383dde45ab8e96f68f85d06, type: 3}
+  detonationDelay: 1
+--- !u!114 &1930322093199161428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593255392985355286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4b13376924eb974da20838b0b9c7f41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemName: AntiGrav Grenade
+  grenadePrefab: {fileID: 4593255392985355286}
+  firePoint: {fileID: 0}
+  aimWithCamera: 1
+  cameraTransform: {fileID: 0}
+  throwForce: {x: 0, y: 5, z: 15}
+  throwOffset: {x: 0, y: 1, z: 2}
+  inheritVehicleVelocity: 1
+>>>>>>> Stashed changes:Assets/SYSTEMS/ITEM SYSTEM/ITEMS/AntiGrav Grenade POWER.prefab
