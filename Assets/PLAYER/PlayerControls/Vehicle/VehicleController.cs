@@ -18,13 +18,8 @@ public class VehicleController : MonoBehaviour
         public Vector3 modelRotationOffset;  // tweak in Inspector (degrees) to align model with collider
     }
 
-    // ... your drive / brake / tuning fields ...
-    public float maxAcceleration = 30.0f;
-    public float brakeAcceleration = 50.0f;
     public float maxMotorTorque = 1500f;
     public float maxBrakeTorque = 8000f;
-    public float accelResponse = 6f;
-    public float decelResponse = 12f;
     public float turnSensitivity = 1.0f;
     public float maxSteeringAngle = 30.0f;
 
@@ -39,15 +34,13 @@ public class VehicleController : MonoBehaviour
     public float maxPitch = 2.0f;
     public float minSpeed = 0f;
     public float maxSpeed = 30f;
-    public float idleThreshold = 0.5f; // Speed below which idle plays
+    public float idleThreshold = 0.5f;
 
     public List<Wheel> wheels = new List<Wheel>();
 
     private InputAction accelerateAction;
     private InputAction reverseAction;
     private InputAction steerAction;
-    
-    float currentThrottle = 0f;
 
     private Rigidbody carRb;
     private Vector3 lastAppliedCoM;
@@ -62,7 +55,6 @@ public class VehicleController : MonoBehaviour
     {
         ApplyCenterOfMass();
         
-        // Get input actions from the new Input System
         accelerateAction = InputSystem.actions.FindAction("Accelerate");
         reverseAction = InputSystem.actions.FindAction("Reverse");
         steerAction = InputSystem.actions.FindAction("Steer");
@@ -74,7 +66,6 @@ public class VehicleController : MonoBehaviour
         if (steerAction == null)
             Debug.LogWarning("[VehicleController] 'Steer' input action not found!");
         
-        // Set up audio sources to loop
         if (idleAudioSource != null)
         {
             idleAudioSource.loop = true;
@@ -85,7 +76,7 @@ public class VehicleController : MonoBehaviour
         if (drivingAudioSource != null)
         {
             drivingAudioSource.loop = true;
-            drivingAudioSource.volume = 0f; // Start silent
+            drivingAudioSource.volume = 0f;
             drivingAudioSource.Play();
         }
     }
@@ -114,10 +105,9 @@ public class VehicleController : MonoBehaviour
 
     void FixedUpdate()
     {
-        UpdateThrottleSmoothing();
         Move();
         Steer();
-        UpdateWheelVisuals(); // keep visuals in sync with physics
+        UpdateWheelVisuals();
     }
 
     void UpdateEngineAudio()
@@ -127,10 +117,8 @@ public class VehicleController : MonoBehaviour
 
         float currentSpeed = carRb.linearVelocity.magnitude;
 
-        // Switch between idle and driving based on speed
         if (currentSpeed < idleThreshold)
         {
-            // Playing idle sound
             if (!isPlayingIdle)
             {
                 if (idleAudioSource != null)
@@ -151,7 +139,6 @@ public class VehicleController : MonoBehaviour
         }
         else
         {
-            // Playing driving sound with dynamic pitch
             if (isPlayingIdle)
             {
                 if (idleAudioSource != null)
@@ -170,7 +157,6 @@ public class VehicleController : MonoBehaviour
                     drivingAudioSource.volume = 1f;
             }
 
-            // Adjust pitch based on speed
             if (drivingAudioSource != null)
             {
                 float speedFactor = Mathf.InverseLerp(minSpeed, maxSpeed, currentSpeed);
@@ -180,50 +166,19 @@ public class VehicleController : MonoBehaviour
         }
     }
 
-    void UpdateThrottleSmoothing()
-    {
-        // Read separate forward/backward inputs from NEW Input System
-        float accelerateInput = accelerateAction != null ? accelerateAction.ReadValue<float>() : 0f;
-        float reverseInput = reverseAction != null ? reverseAction.ReadValue<float>() : 0f;
-        
-        // Combine into single throttle value (forward positive, reverse negative)
-        float target = accelerateInput - reverseInput;
-        
-        // If no input, decelerate faster
-        if (Mathf.Abs(target) < 0.01f)
-        {
-            currentThrottle = Mathf.MoveTowards(currentThrottle, 0f, decelResponse * Time.fixedDeltaTime);
-        }
-        else
-        {
-            // Smooth throttle response
-            float responseRate = (Mathf.Abs(target) > Mathf.Abs(currentThrottle)) ? accelResponse : decelResponse;
-            currentThrottle = Mathf.MoveTowards(currentThrottle, target, responseRate * Time.fixedDeltaTime);
-        }
-    }
-
     void Move()
     {
-        if (carRb == null) carRb = GetComponent<Rigidbody>();
         if (carRb == null) return;
 
-        float forwardVel = Vector3.Dot(carRb.linearVelocity, transform.forward);
-        
-        // Read inputs from NEW Input System
+        // Read inputs DIRECTLY - no smoothing/accumulation
         float accelerateInput = accelerateAction != null ? accelerateAction.ReadValue<float>() : 0f;
         float reverseInput = reverseAction != null ? reverseAction.ReadValue<float>() : 0f;
+        
+        float forwardVel = Vector3.Dot(carRb.linearVelocity, transform.forward);
 
-        // Determine if we should brake: moving forward and pressing reverse
+        // Determine if braking
         bool shouldBrake = reverseInput > 0.1f && forwardVel > 1f;
-
-        // Determine if we should brake when reversing: moving backward and pressing accelerate
         bool shouldBrakeReverse = accelerateInput > 0.1f && forwardVel < -1f;
-
-        // Zero throttle if ANY braking is happening
-        if (shouldBrake || shouldBrakeReverse)
-        {
-            currentThrottle = 0f;
-        }
 
         foreach (var w in wheels)
         {
@@ -232,33 +187,23 @@ public class VehicleController : MonoBehaviour
             float motor = 0f;
             float brake = 0f;
 
-            // BRAKING when moving forward and pressing reverse
-            if (shouldBrake)
+            // BRAKING
+            if (shouldBrake || shouldBrakeReverse)
             {
                 motor = 0f;
                 brake = maxBrakeTorque;
             }
-            // BRAKING when moving backward and pressing accelerate
-            else if (shouldBrakeReverse)
-            {
-                motor = 0f;
-                brake = maxBrakeTorque;
-            }
-            // NORMAL DRIVING: Apply throttle
-            else if (Mathf.Abs(currentThrottle) > 0.001f)
+            // DRIVING - Apply torque ONLY if input is pressed
+            else if (accelerateInput > 0.01f || reverseInput > 0.01f)
             {
                 if (w.isDriven)
                 {
-                    motor = currentThrottle * maxMotorTorque;
-                    brake = 0f;
-                }
-                else
-                {
-                    motor = 0f;
+                    float inputValue = accelerateInput - reverseInput;
+                    motor = inputValue * maxMotorTorque;
                     brake = 0f;
                 }
             }
-            // NO INPUT - COAST
+            // NO INPUT - COAST (no motor, no brake)
             else
             {
                 motor = 0f;
@@ -272,7 +217,6 @@ public class VehicleController : MonoBehaviour
 
     void Steer()
     {
-        // Read from NEW Input System
         float rawSteerInput = steerAction != null ? steerAction.ReadValue<float>() : 0f;
         
         float steerAngle = rawSteerInput * turnSensitivity * maxSteeringAngle;
@@ -293,7 +237,6 @@ public class VehicleController : MonoBehaviour
 
     void UpdateWheelVisuals()
     {
-        // Use WheelCollider.GetWorldPose() and apply per-wheel rotation offset to align the mesh.
         foreach (var w in wheels)
         {
             if (w.wheelCollider == null || w.wheelModel == null) continue;
@@ -302,13 +245,8 @@ public class VehicleController : MonoBehaviour
             Quaternion rot;
             w.wheelCollider.GetWorldPose(out pos, out rot);
 
-            // Apply the per-wheel inspector offset (degrees)
             Quaternion offset = Quaternion.Euler(w.modelRotationOffset);
-
-            // If you need to invert rotation direction for the model (rare), flip around Y.
             Quaternion invert = w.invertedModelRotation ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
-
-            // Final model rotation: collider rotation * offset * optional invert
             Quaternion modelRot = rot * offset * invert;
 
             w.wheelModel.transform.position = pos;
