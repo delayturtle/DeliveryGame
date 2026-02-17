@@ -111,7 +111,7 @@ public class EnemyVehicleHealth : MonoBehaviour
         if (objectToEnableOnDeath != null)
             objectToEnableOnDeath.SetActive(true);
 
-        // stop physics motion
+        
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
             rb.isKinematic = true;
