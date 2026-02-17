@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -108,7 +109,7 @@ public class VehicleHealth : MonoBehaviour
 
         // Collect available damage sounds
         AudioClip[] damageSounds = new AudioClip[] { damageSound1, damageSound2, damageSound3 };
-        
+
         // Filter out null clips
         int availableSounds = 0;
         for (int i = 0; i < damageSounds.Length; i++)
