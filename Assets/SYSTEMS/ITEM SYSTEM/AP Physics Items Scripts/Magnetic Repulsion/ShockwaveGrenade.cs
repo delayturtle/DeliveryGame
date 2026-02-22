@@ -17,6 +17,22 @@ public class ShockwaveGrenade : MonoBehaviour
     public float upwardBoost = 0.5f;
     public bool useDistanceFalloff = true;
 
+    [Header("Force Falloff Curve")]
+    [Tooltip("X = normalized distance (0=center, 1=edge). Y = force multiplier.")]
+    public AnimationCurve forceFalloffCurve = new AnimationCurve(
+        new Keyframe(0f, 1f),
+        new Keyframe(1f, 0.25f)
+    );
+
+    [Header("Mass Compensation")]
+    public bool compensateForMass = true;
+    public float baseMassReference = 10f;
+
+    [Header("Tag Force Multipliers")]
+    public float playerMultiplier = 1.5f;
+    public float enemyMultiplier = 1.3f;
+    public float vehicleMultiplier = 2f;
+
     [Header("Tags to Affect")]
     public List<string> affectedTags = new List<string>();
 
@@ -41,13 +57,11 @@ public class ShockwaveGrenade : MonoBehaviour
     {
         if (triggerOnce && hasTriggered) return;
 
-        // Only trigger if we hit allowed layers
         if (((1 << collision.gameObject.layer) & hitLayers) == 0)
             return;
 
         hasTriggered = true;
 
-        // best impact point
         Vector3 impactPoint = collision.GetContact(0).point;
 
         StartCoroutine(ShockwaveRoutine(impactPoint));
@@ -55,7 +69,6 @@ public class ShockwaveGrenade : MonoBehaviour
 
     private IEnumerator ShockwaveRoutine(Vector3 center)
     {
-        // optional delay
         if (shockwaveDelay > 0f)
             yield return new WaitForSeconds(shockwaveDelay);
 
@@ -84,25 +97,46 @@ public class ShockwaveGrenade : MonoBehaviour
             Rigidbody rb = col.attachedRigidbody;
             if (rb == null) continue;
 
-            // Must match one of the tags in our list
             if (!affectedTags.Contains(col.tag)) continue;
 
-            // --------- LINE OF SIGHT CHECK ----------
             if (!HasLineOfSight(center, rb.worldCenterOfMass, col))
                 continue;
 
-            // Direction away from center
             Vector3 direction = (rb.worldCenterOfMass - center).normalized;
             direction.y += upwardBoost;
 
             float finalForce = shockwaveForce;
 
-            // distance falloff
+            // ----- Distance Falloff -----
             if (useDistanceFalloff)
             {
                 float dist = Vector3.Distance(center, rb.worldCenterOfMass);
-                float t = Mathf.Clamp01(1f - (dist / shockwaveRadius));
-                finalForce *= t;
+                float normalizedDistance = Mathf.Clamp01(dist / shockwaveRadius);
+                float falloffMultiplier = forceFalloffCurve.Evaluate(normalizedDistance);
+                finalForce *= falloffMultiplier;
+            }
+
+            // ----- Tag-Based Multipliers -----
+            switch (col.tag)
+            {
+                case "Player":
+                    finalForce *= playerMultiplier;
+                    break;
+
+                case "Enemy":
+                    finalForce *= enemyMultiplier;
+                    break;
+
+                case "Vehicle":
+                    finalForce *= vehicleMultiplier;
+                    break;
+            }
+
+            // ----- Mass Compensation -----
+            if (compensateForMass)
+            {
+                float massFactor = rb.mass / baseMassReference;
+                finalForce *= massFactor;
             }
 
             rb.AddForce(direction.normalized * finalForce, ForceMode.Impulse);
@@ -121,13 +155,11 @@ public class ShockwaveGrenade : MonoBehaviour
 
         dir /= dist;
 
-        // Raycast to see if something blocks it
         if (Physics.Raycast(start, dir, out RaycastHit hit, dist, obstacleLayers, QueryTriggerInteraction.Ignore))
         {
             if (debugDrawRays)
                 Debug.DrawLine(start, hit.point, Color.red, 1f);
 
-            // If we hit something before reaching the target, no LOS
             if (hit.collider != null && hit.collider != targetCollider)
                 return false;
         }

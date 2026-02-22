@@ -3,24 +3,26 @@ using UnityEngine;
 public class OrbitMarker : MonoBehaviour
 {
     [Header("Detection")]
-    public float detectionRadius = 15f;
+    public float detectionRadius = 18f;
     public LayerMask affectedLayers;
 
-    [Header("Gravity Model")]
-    public float gravityStrength = 120f;
-    public float minDistanceClamp = 1.5f;
+    [Header("Orbit Band")]
+    public float preferredOrbitRadius = 18f;
+    public float inwardPullStrength = 1f;
+    public float orbitStrength = 2.5f;
 
-    [Header("Orbit Motion")]
-    public float orbitStrength = 25f;
-
-    [Header("Spiral")]
-    public float spiralDecay = 0.5f;
+    [Header("Gravity Dampening")]
+    [Range(0f, 1f)]
+    public float gravityScaleInsideField = 0.9f;
 
     [Header("Stabilization")]
-    public float velocityDamping = 0.998f;
+    public float velocityDamping = 0.9995f;
+
+    [Header("Inner Safety")]
+    public float innerDeadZone = 3f;
 
     [Header("Lifetime")]
-    public float duration = 6f;
+    public float duration = 10f;
 
     void Start()
     {
@@ -46,34 +48,56 @@ public class OrbitMarker : MonoBehaviour
 
             Vector3 toCenter = transform.position - rb.worldCenterOfMass;
             float distance = toCenter.magnitude;
-
-            if (distance < 0.01f)
-                continue;
+            if (distance < 0.01f) continue;
 
             Vector3 radialDir = toCenter.normalized;
 
-            // Clamp to avoid singularities
-            float safeDistance = Mathf.Max(distance, minDistanceClamp);
+            // -------- STABLE ORBIT BAND CORRECTION --------
+            // Pull toward preferred orbit radius
+            float radiusError = preferredOrbitRadius - distance;
+            rb.AddForce(radialDir * radiusError * inwardPullStrength, ForceMode.Acceleration);
 
-            // -------- INVERSE-SQUARE GRAVITY --------
-            float gravityForce = gravityStrength / (safeDistance * safeDistance);
-            rb.AddForce(radialDir * gravityForce, ForceMode.Acceleration);
+            // -------- STABLE TANGENT DIRECTION --------
+            Vector3 tangent = Vector3.Cross(radialDir, Vector3.up);
 
-            // -------- DISTANCE-BASED ORBIT --------
-            Vector3 tangentialDir = Vector3.Cross(radialDir, rb.linearVelocity.normalized + Vector3.up * 0.01f);
-            rb.AddForce(tangentialDir.normalized * orbitStrength / safeDistance, ForceMode.Acceleration);
+            if (tangent.sqrMagnitude < 0.01f)
+                tangent = Vector3.Cross(radialDir, Vector3.right);
 
-            // -------- SPIRAL DECAY --------
-            rb.AddForce(radialDir * spiralDecay, ForceMode.Acceleration);
+            tangent.Normalize();
 
-            // -------- MASS-AWARE DAMPING --------
-            float massFactor = Mathf.Clamp(rb.mass * 0.1f, 0.85f, 0.995f);
-            rb.linearVelocity *= velocityDamping * massFactor;
+            // Orbit slightly weaker at outer edge
+            float orbitFalloff = Mathf.Clamp01(1f - (distance / detectionRadius));
+            rb.AddForce(tangent * orbitStrength * orbitFalloff, ForceMode.Acceleration);
+
+            // -------- REDUCE WORLD GRAVITY --------
+            Vector3 gravityCompensation = Physics.gravity * (1f - gravityScaleInsideField);
+            rb.AddForce(-gravityCompensation, ForceMode.Acceleration);
+
+            // -------- INNER DEAD ZONE (ANTI-JITTER) --------
+            if (distance < innerDeadZone)
+            {
+                rb.linearVelocity *= 0.85f;
+            }
+
+            // -------- GLOBAL STABILIZATION --------
+            rb.linearVelocity *= velocityDamping;
         }
     }
 
     void RemoveMarker()
     {
         Destroy(this);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, preferredOrbitRadius);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, innerDeadZone);
     }
 }

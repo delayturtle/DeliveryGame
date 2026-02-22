@@ -10,6 +10,8 @@ TagManager:
   - Tool
   - Item
   - Bumper
+  - Package
+  - DeliveryPoint
   layers:
   - Default
   - TransparentFX
