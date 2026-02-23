@@ -109,7 +109,7 @@ public class VehicleHealth : MonoBehaviour
         // Collect available damage sounds
         AudioClip[] damageSounds = new AudioClip[] { damageSound1, damageSound2, damageSound3 };
         
-        // Filter out null clips
+        // Filter out null clips and count available sounds
         int availableSounds = 0;
         for (int i = 0; i < damageSounds.Length; i++)
         {
@@ -123,7 +123,7 @@ public class VehicleHealth : MonoBehaviour
             return;
         }
 
-        // Pick a random non-null sound
+        // Select a random non-null sound
         AudioClip selectedClip = null;
         while (selectedClip == null)
         {

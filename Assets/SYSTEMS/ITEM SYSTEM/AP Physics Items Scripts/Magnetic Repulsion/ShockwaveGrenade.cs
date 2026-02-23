@@ -43,15 +43,28 @@ public class ShockwaveGrenade : MonoBehaviour
     [Tooltip("Small vertical offset so the ray doesn't immediately hit the ground")]
     public float raycastStartHeight = 0.25f;
 
-    [Header("VFX")]
-    public GameObject shockwaveVFXPrefab;
-    public float vfxDestroyAfter = 5f;
+    [Header("Shockwave Expansion VFX")]
+    [Tooltip("Optional visual object (mesh sphere, particle system root, VFX graph object, etc.)")]
+    public Transform vfxRoot;
+
+    [Tooltip("Seconds it takes for the shockwave to expand from 0 to full size")]
+    public float expandTime = 0.35f;
+
+    [Tooltip("Expansion curve (0->1). Leave default for nice ease-in/out.")]
+    public AnimationCurve expandCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Debug")]
     public bool drawRadiusGizmo = true;
     public bool debugDrawRays = false;
 
     private bool hasTriggered = false;
+    private Vector3 initialVfxScale;
+
+    private void Awake()
+    {
+        if (vfxRoot != null)
+            initialVfxScale = vfxRoot.localScale;
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -72,20 +85,47 @@ public class ShockwaveGrenade : MonoBehaviour
         if (shockwaveDelay > 0f)
             yield return new WaitForSeconds(shockwaveDelay);
 
-        SpawnVFX(center);
+        // Detach vfxRoot before destroying the grenade
+        if (vfxRoot != null)
+        {
+            vfxRoot.SetParent(null);
+            StartCoroutine(ExpandShockwaveVisual(center));
+        }
+
         TriggerShockwave(center);
 
         Destroy(gameObject);
     }
 
-    private void SpawnVFX(Vector3 center)
+    private IEnumerator ExpandShockwaveVisual(Vector3 center)
     {
-        if (shockwaveVFXPrefab == null) return;
+        if (vfxRoot == null)
+            yield break;
 
-        GameObject vfx = Instantiate(shockwaveVFXPrefab, center, Quaternion.identity);
+        // Position the VFX at impact point
+        vfxRoot.position = center;
 
-        if (vfxDestroyAfter > 0f)
-            Destroy(vfx, vfxDestroyAfter);
+        // Collapse instantly first
+        vfxRoot.localScale = Vector3.zero;
+
+        // Expand smoothly
+        float t = 0f;
+        while (t < expandTime)
+        {
+            t += Time.deltaTime;
+            float a = Mathf.Clamp01(t / expandTime);
+            float eased = expandCurve.Evaluate(a);
+
+            vfxRoot.localScale = Vector3.Lerp(Vector3.zero, initialVfxScale, eased);
+
+            yield return null;
+        }
+
+        // Ensure final value
+        vfxRoot.localScale = initialVfxScale;
+
+        // Destroy the VFX after animation completes
+        Destroy(vfxRoot.gameObject);
     }
 
     private void TriggerShockwave(Vector3 center)

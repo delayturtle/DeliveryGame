@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6629461516844674629
+--- !u!1 &3965236411674409106
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,27 +8,27 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1660224791569418714}
-  - component: {fileID: 879300303866635570}
-  - component: {fileID: 8358444730060221070}
-  - component: {fileID: 7128914640234722242}
-  - component: {fileID: 4033461518676314698}
-  - component: {fileID: 2225898693669195948}
-  - component: {fileID: 8427383049465051765}
+  - component: {fileID: 3710697189401227208}
+  - component: {fileID: 1047778994052355226}
+  - component: {fileID: 6697997743113279372}
+  - component: {fileID: 7340405686459497393}
+  - component: {fileID: 6102140449267243910}
+  - component: {fileID: 8013054297099606345}
+  - component: {fileID: 994039156426187404}
   m_Layer: 3
-  m_Name: Shockwave Grenade POWER
+  m_Name: 'Shockwave Grenade POWER '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1660224791569418714
+--- !u!4 &3710697189401227208
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -336.31, y: 19.4, z: -148.64139}
@@ -37,21 +37,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &879300303866635570
+--- !u!33 &1047778994052355226
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &8358444730060221070
+--- !u!23 &6697997743113279372
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 7655b0e3d21cccd4e9c0b6abc61c29ab, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -90,13 +90,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &7128914640234722242
+--- !u!135 &7340405686459497393
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   m_Material: {fileID: 13400000, guid: d53893574671bd94a8227219c2cbf7f8, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -111,13 +111,13 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &4033461518676314698
+--- !u!54 &6102140449267243910
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
@@ -138,30 +138,30 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2225898693669195948
+--- !u!114 &8013054297099606345
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4b13376924eb974da20838b0b9c7f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   itemName: Shockwave Grenade
-  grenadePrefab: {fileID: 6629461516844674629}
+  grenadePrefab: {fileID: 3965236411674409106}
   throwForce: 25
   throwOffset: {x: 0, y: 1, z: 2}
   inheritVehicleVelocity: 1
---- !u!114 &8427383049465051765
+--- !u!114 &994039156426187404
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6629461516844674629}
+  m_GameObject: {fileID: 3965236411674409106}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b0cbff8c4207a418939c3c9fd63c42, type: 3}
@@ -214,7 +214,31 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   raycastStartHeight: 0.25
-  shockwaveVFXPrefab: {fileID: 0}
-  vfxDestroyAfter: 5
+  vfxRoot: {fileID: 0}
+  expandTime: 0.35
+  expandCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   drawRadiusGizmo: 1
   debugDrawRays: 1

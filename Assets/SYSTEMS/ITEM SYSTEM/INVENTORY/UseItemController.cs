@@ -28,6 +28,12 @@ public class UseItemController : MonoBehaviour
     {
         if (IsEquipped && useAction.WasPressedThisFrame())
         {
+            // Unparent the item before using it
+            if (activeItem.transform.parent != null)
+            {
+                activeItem.transform.SetParent(null);
+            }
+
             activeItem.UseItem();
         }
     }
