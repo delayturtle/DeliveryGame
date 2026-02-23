@@ -1,9 +1,14 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(AudioSource))]
 public class Package : MonoBehaviour
 {
+    [Header("Audio")]
+    public AudioClip pickupSound;
+
     private Rigidbody rb;
+    private AudioSource audioSource;
 
     private float pickupCooldown = 0.3f;
     private float lastPickupTime = -10f;
@@ -11,6 +16,7 @@ public class Package : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -25,6 +31,13 @@ public class Package : MonoBehaviour
             if (truck != null)
             {
                 lastPickupTime = Time.time;
+
+                // Play pickup sound
+                if (audioSource != null && pickupSound != null)
+                {
+                    audioSource.PlayOneShot(pickupSound);
+                }
+
                 TeleportToDropPoint(truck.GetDropPoint());
             }
         }

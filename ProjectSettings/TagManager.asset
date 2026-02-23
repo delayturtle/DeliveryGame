@@ -12,6 +12,7 @@ TagManager:
   - Bumper
   - Package
   - DeliveryPoint
+  - PowerAudio
   layers:
   - Default
   - TransparentFX
