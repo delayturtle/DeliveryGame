@@ -7,12 +7,17 @@ public class UseItemController : MonoBehaviour
     private Item activeItem = null;
 
     private InputAction useAction;
+public System.Action<Item> OnItemChanged;
 
     public Item ActiveItem
+{
+    get { return activeItem; }
+    set
     {
-        get { return activeItem; }
-        set { activeItem = value; }
+        activeItem = value;
+        OnItemChanged?.Invoke(activeItem);
     }
+}
 
     public bool IsEquipped
     {

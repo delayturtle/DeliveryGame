@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7901623255382447028}
   - component: {fileID: 1978768116883477036}
   - component: {fileID: 3663662800413442880}
+  - component: {fileID: -5359300369595698125}
   m_Layer: 6
   m_Name: Anti Gravity Package
   m_TagString: Package
@@ -32,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 22.916504, y: -1.7891273, z: 46.616684}
-  m_LocalScale: {x: 0.9287515, y: 1.8, z: 0.81932586}
+  m_LocalScale: {x: 0.7, y: 1.4, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -248,3 +249,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-5359300369595698125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037059903831761826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62fa2e0f7be86734ba1ca6b345bc0756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemPrefab: {fileID: 3668648285580118931, guid: cd00f38a447ef7047b67336c0ecaa712, type: 3}

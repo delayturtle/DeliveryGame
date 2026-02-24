@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ceaafd019ed3f514fb8e6ea543273fc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: SlowTime
+  itemName: Stop & Watch
   slowTimeDuration: 5
   slowTimeScale: 0.5
   normalFOV: 40

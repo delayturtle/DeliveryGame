@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18d4a4b21b78ad648a3cd81f45c33871, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Gravity Orbit
+  itemName: Gogo Orbit
   grenadePrefab: {fileID: 4593255392985355286, guid: 422772a4dca942b42b1a3c5c1a815c55, type: 3}
   throwForce: 15
   throwOffset: {x: 0, y: 1, z: 2}

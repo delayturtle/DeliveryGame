@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4b13376924eb974da20838b0b9c7f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: AntiGrav Grenade
+  itemName: Lifter Laughter
   grenadePrefab: {fileID: 28829206825977367, guid: 592ee0d6befe40c44bdf3a76646b7445, type: 3}
-  throwForce: 35
+  throwForce: 50
   throwOffset: {x: 0, y: 1, z: 2}
   inheritVehicleVelocity: 1

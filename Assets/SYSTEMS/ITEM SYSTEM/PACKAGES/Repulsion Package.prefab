@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8870897756764411763}
   - component: {fileID: 4227910851535835492}
   - component: {fileID: 20594550912476522}
+  - component: {fileID: 5782339841230649061}
   m_Layer: 6
   m_Name: Repulsion Package
   m_TagString: Package
@@ -248,3 +249,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &5782339841230649061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8035378523185511903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62fa2e0f7be86734ba1ca6b345bc0756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemPrefab: {fileID: 8760387181295886302, guid: 43468bb69e4f28449bcfd63d1e4afb52, type: 3}

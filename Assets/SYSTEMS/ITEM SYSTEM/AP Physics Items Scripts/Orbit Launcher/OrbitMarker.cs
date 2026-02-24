@@ -8,8 +8,8 @@ public class OrbitMarker : MonoBehaviour
 
     [Header("Orbit Band")]
     public float preferredOrbitRadius = 18f;
-    public float inwardPullStrength = 1f;
-    public float orbitStrength = 2.5f;
+    public float inwardPullStrength = 2f;
+    public float orbitStrength = 3f;
 
     [Header("Gravity Dampening")]
     [Range(0f, 1f)]
@@ -25,9 +25,15 @@ public class OrbitMarker : MonoBehaviour
     public float duration = 10f;
 
     void Start()
+{
+    // If no layers selected, default to Everything
+    if (affectedLayers == 0)
     {
-        Invoke(nameof(RemoveMarker), duration);
+        affectedLayers = ~0; // All layers
     }
+
+    Invoke(nameof(RemoveMarker), duration);
+}
 
     void FixedUpdate()
     {
