@@ -1,16 +1,26 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class TruckPowerupHandler : MonoBehaviour
 {
     public TruckInventory inventory;
     public UseItemController itemController;
 
-    [Header("Input")]
-    public KeyCode usePowerupKey = KeyCode.Q;
+    private InputAction grabItemAction;
+
+    void Start()
+    {
+        grabItemAction = InputSystem.actions.FindAction("GrabItem");
+        
+        if (grabItemAction == null)
+        {
+            Debug.LogWarning("[TruckPowerupHandler] 'GrabItem' input action not found!");
+        }
+    }
 
     void Update()
     {
-        if (Input.GetKeyDown(usePowerupKey))
+        if (grabItemAction != null && grabItemAction.WasPressedThisFrame())
         {
             TryUseRandomPackage();
         }
