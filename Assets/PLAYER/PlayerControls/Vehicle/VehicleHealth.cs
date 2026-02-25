@@ -32,6 +32,20 @@ public class VehicleHealth : MonoBehaviour
     public AudioClip damageSound2;
     public AudioClip damageSound3;
 
+    [Header("Progressive Damage Effects")]
+    [Tooltip("Light smoke effect - enabled at 70 health")]
+    public GameObject lightSmokeEffect;
+    
+    [Tooltip("Heavy smoke effect - enabled at 40 health")]
+    public GameObject heavySmokeEffect;
+    
+    [Tooltip("Fire effect - enabled at 20 health")]
+    public GameObject fireEffect;
+
+    private bool lightSmokeEnabled = false;
+    private bool heavySmokeEnabled = false;
+    private bool fireEnabled = false;
+
     [Header("Death behaviour (assign in Inspector)")]
     [Tooltip("GameObject to disable when health reaches zero (e.g. the intact car model)")]
     public GameObject objectToDisableOnDeath;
@@ -47,6 +61,14 @@ public class VehicleHealth : MonoBehaviour
     void Awake()
     {
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Ensure all damage effects start disabled
+        if (lightSmokeEffect != null)
+            lightSmokeEffect.SetActive(false);
+        if (heavySmokeEffect != null)
+            heavySmokeEffect.SetActive(false);
+        if (fireEffect != null)
+            fireEffect.SetActive(false);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -92,9 +114,58 @@ public class VehicleHealth : MonoBehaviour
         // Play random damage sound
         PlayRandomDamageSound();
 
+        // Update damage effects based on health thresholds
+        UpdateDamageEffects();
+
         if (currentHealth <= 0)
         {
             Die();
+        }
+    }
+
+    void UpdateDamageEffects()
+    {
+        // Fire effect at 20 health or below
+        if (currentHealth <= 20 && !fireEnabled)
+        {
+            if (fireEffect != null)
+                fireEffect.SetActive(true);
+            if (heavySmokeEffect != null)
+                heavySmokeEffect.SetActive(false);
+            if (lightSmokeEffect != null)
+                lightSmokeEffect.SetActive(false);
+            
+            fireEnabled = true;
+            heavySmokeEnabled = false;
+            lightSmokeEnabled = false;
+        }
+        // Heavy smoke at 40 health or below (but above 20)
+        else if (currentHealth <= 40 && !heavySmokeEnabled)
+        {
+            if (heavySmokeEffect != null)
+                heavySmokeEffect.SetActive(true);
+            if (lightSmokeEffect != null)
+                lightSmokeEffect.SetActive(false);
+            if (fireEffect != null)
+                fireEffect.SetActive(false);
+            
+            heavySmokeEnabled = true;
+            lightSmokeEnabled = false;
+            fireEnabled = false;
+        }
+        // Light smoke at 70 health or below (but above 40)
+        else if (currentHealth <= 70 && !lightSmokeEnabled)
+        {
+            if (lightSmokeEffect != null)
+                lightSmokeEffect.SetActive(true);
+            if (heavySmokeEffect != null)
+                heavySmokeEffect.SetActive(false);
+            if (fireEffect != null)
+                fireEffect.SetActive(false);
+            
+            lightSmokeEnabled = true;
+            heavySmokeEnabled = false;
+            fireEnabled = false;
         }
     }
 
