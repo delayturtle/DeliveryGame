@@ -12,16 +12,17 @@ public class QuestManager : MonoBehaviour
     [Header("Package Search")]
     public float searchRadius = 50f;
 
+public int GetScore()
+{
+    return totalScore;
+}
+
     [Header("Delivery Points")]
     public List<DeliveryPoint> allDeliveryPoints = new List<DeliveryPoint>();
 
     [Header("Arrow Prefabs")]
     public GameObject compassArrowPrefab;
     public GameObject worldArrowPrefab;
-
-    [Header("Delivery SFX")]
-    public AudioSource deliveryAudio;
-    public AudioClip deliveryClip;
 
     private PlayerCompassArrow compassArrow;
     private FloatingArrow worldArrow;
@@ -31,6 +32,11 @@ public class QuestManager : MonoBehaviour
 
     private GameObject currentTargetPackage;
     private int totalScore = 0;
+
+    // Dialogue milestone flags
+    private bool triggered100 = false;
+    private bool triggered300 = false;
+    private bool triggered600 = false;
 
     void Start()
     {
@@ -75,7 +81,7 @@ public class QuestManager : MonoBehaviour
             currentTargetPackage = FindNearestPackage();
 
             if (questText != null)
-                questText.text = "LOCATE APME CARGO";
+                questText.text = "Find a package!";
 
             return;
         }
@@ -165,16 +171,51 @@ public class QuestManager : MonoBehaviour
 
         activeDeliveries.Remove(deliveryPoint);
 
-        // Play delivery sound
-        if (deliveryAudio != null && deliveryClip != null)
+        UpdateScoreUI();
+        CheckScoreMilestones();
+
+        HandleQuestState();
+    }
+
+    // =====================================================
+    // DIALOGUE MILESTONES (UPDATED)
+    // =====================================================
+
+    void CheckScoreMilestones()
+    {
+        if (totalScore >= 100 && !triggered100)
         {
-            deliveryAudio.PlayOneShot(deliveryClip);
+            triggered100 = true;
+
+            DialogueManager.Instance.StartDialogue(new DialogueLine[]
+            {
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Nice work!" },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "You've completed your first deliveries." },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Keep it up!" }
+            });
         }
 
-        UpdateScoreUI();
+        if (totalScore >= 300 && !triggered300)
+        {
+            triggered300 = true;
 
-        // Immediately re-evaluate state
-        HandleQuestState();
+            DialogueManager.Instance.StartDialogue(new DialogueLine[]
+            {
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Impressive!" },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "You're becoming a reliable courier." }
+            });
+        }
+
+        if (totalScore >= 600 && !triggered600)
+        {
+            triggered600 = true;
+
+            DialogueManager.Instance.StartDialogue(new DialogueLine[]
+            {
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Outstanding performance!" },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "You're one of the best couriers on the road!" }
+            });
+        }
     }
 
     void UpdateDeliveryQuestText()
@@ -183,15 +224,14 @@ public class QuestManager : MonoBehaviour
 
         if (activeDeliveries.Count == 1)
         {
-            questText.text = "DELIVERY LOCATION:\n" + activeDeliveries[0].name;
+            questText.text = "Deliver package to:\n" + activeDeliveries[0].name;
         }
         else
         {
-            string list = "DELIVERY LOCATIONS:\n";
+            string list = "Deliver packages to:\n";
             foreach (DeliveryPoint dp in activeDeliveries)
-            {
                 list += dp.name + "\n";
-            }
+
             questText.text = list;
         }
     }
@@ -199,7 +239,7 @@ public class QuestManager : MonoBehaviour
     void UpdateScoreUI()
     {
         if (scoreText != null)
-            scoreText.text = "$ " + totalScore;
+            scoreText.text = "Score: " + totalScore;
     }
 
     // =====================================================
