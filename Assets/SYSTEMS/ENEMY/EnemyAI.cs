@@ -21,13 +21,6 @@ public class EnemyAI : MonoBehaviour
     public Transform targetPoint;
     public float stoppingDistance = 5f;
     public float targetUpdateInterval = 0.2f;
-    
-    [Header("Player Targeting")]
-    [Tooltip("Tag to identify the player (default: 'Player')")]
-    public string playerTag = "Player";
-    
-    [Tooltip("Auto-find and target player on spawn")]
-    public bool autoTargetPlayer = true;
 
     [Header("Obstacle Avoidance")]
     public bool enableObstacleAvoidance = true;
@@ -84,27 +77,6 @@ public class EnemyAI : MonoBehaviour
     void Start()
     {
         ApplyCenterOfMass();
-        
-        // Auto-find player if enabled
-        if (autoTargetPlayer && targetPoint == null)
-        {
-            FindAndTargetPlayer();
-        }
-    }
-
-    void FindAndTargetPlayer()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag(playerTag);
-        
-        if (player != null)
-        {
-            targetPoint = player.transform;
-            Debug.Log($"[EnemyAI] Found and targeting player: {player.name}");
-        }
-        else
-        {
-            Debug.LogWarning($"[EnemyAI] Could not find player with tag '{playerTag}'");
-        }
     }
 
     void OnValidate()
