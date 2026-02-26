@@ -32,6 +32,25 @@ public class VehicleHealth : MonoBehaviour
     public AudioClip damageSound2;
     public AudioClip damageSound3;
 
+    [Header("Health Announcer Audio")]
+    public AudioSource healthAnnouncerAudioSource;
+    
+    [System.Serializable]
+    public struct HealthAnnouncement
+    {
+        [Tooltip("Health threshold - announcer plays when health drops to or below this value")]
+        public int healthThreshold;
+        
+        [Tooltip("Audio clip to play at this health level")]
+        public AudioClip announcerClip;
+        
+        [HideInInspector]
+        public bool hasPlayed;
+    }
+    
+    [Tooltip("Health announcements - order from highest to lowest health threshold")]
+    public HealthAnnouncement[] healthAnnouncements = new HealthAnnouncement[4];
+
     [Header("Progressive Damage Effects")]
     [Tooltip("Light smoke effect - enabled at 70 health")]
     public GameObject lightSmokeEffect;
@@ -61,6 +80,12 @@ public class VehicleHealth : MonoBehaviour
     void Awake()
     {
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Reset all announcement flags
+        for (int i = 0; i < healthAnnouncements.Length; i++)
+        {
+            healthAnnouncements[i].hasPlayed = false;
+        }
         
         // Ensure all damage effects start disabled
         if (lightSmokeEffect != null)
@@ -114,12 +139,55 @@ public class VehicleHealth : MonoBehaviour
         // Play random damage sound
         PlayRandomDamageSound();
 
+        // Check for health announcements
+        PlayHealthAnnouncement();
+
         // Update damage effects based on health thresholds
         UpdateDamageEffects();
 
         if (currentHealth <= 0)
         {
             Die();
+        }
+    }
+
+    void PlayHealthAnnouncement()
+    {
+        if (healthAnnouncerAudioSource == null)
+            return;
+
+        // Find the lowest health threshold that applies and hasn't been played yet
+        int lowestApplicableIndex = -1;
+        
+        for (int i = 0; i < healthAnnouncements.Length; i++)
+        {
+            // Check if current health is at or below this threshold
+            if (currentHealth <= healthAnnouncements[i].healthThreshold && 
+                !healthAnnouncements[i].hasPlayed &&
+                healthAnnouncements[i].announcerClip != null)
+            {
+                // Track the lowest threshold that applies
+                if (lowestApplicableIndex == -1 || 
+                    healthAnnouncements[i].healthThreshold < healthAnnouncements[lowestApplicableIndex].healthThreshold)
+                {
+                    lowestApplicableIndex = i;
+                }
+            }
+        }
+
+        // If we found an applicable announcement, play it
+        if (lowestApplicableIndex != -1)
+        {
+            healthAnnouncerAudioSource.PlayOneShot(healthAnnouncements[lowestApplicableIndex].announcerClip);
+            
+            // Mark this and all higher thresholds as played
+            for (int i = 0; i < healthAnnouncements.Length; i++)
+            {
+                if (healthAnnouncements[i].healthThreshold >= healthAnnouncements[lowestApplicableIndex].healthThreshold)
+                {
+                    healthAnnouncements[i].hasPlayed = true;
+                }
+            }
         }
     }
 
