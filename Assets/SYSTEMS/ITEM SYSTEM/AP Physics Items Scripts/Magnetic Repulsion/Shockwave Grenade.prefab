@@ -44,8 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4b13376924eb974da20838b0b9c7f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Repulsor
+  itemName: Blast Away
+  itemIcon: {fileID: 21300000, guid: 7c68c45bd6717f141ab2b83e1103ebee, type: 3}
   grenadePrefab: {fileID: 3593430955534749208, guid: 3f5b62fc83e7878418d44e8998a5f8a4, type: 3}
-  throwForce: 50
+  throwForce: 80
   throwOffset: {x: 0, y: 1, z: 2}
   inheritVehicleVelocity: 1

@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemName: Stop & Watch
+  itemIcon: {fileID: 21300000, guid: 05147667d18c89647849c43b2ec6b785, type: 3}
   slowTimeDuration: 5
   slowTimeScale: 0.5
   normalFOV: 40

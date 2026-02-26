@@ -152,7 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 282e5cb25299d494c8b20382523163fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: OrbitLauncher
+  itemName: Orblitzer
+  itemIcon: {fileID: 21300000, guid: 5e2a4f90c3e42bd4ca75e194ed0e3ac1, type: 3}
   range: 500
   hitMask:
     serializedVersion: 2

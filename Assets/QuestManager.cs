@@ -12,6 +12,11 @@ public class QuestManager : MonoBehaviour
     [Header("Package Search")]
     public float searchRadius = 50f;
 
+public int GetScore()
+{
+    return totalScore;
+}
+
     [Header("Delivery Points")]
     public List<DeliveryPoint> allDeliveryPoints = new List<DeliveryPoint>();
 
@@ -27,6 +32,11 @@ public class QuestManager : MonoBehaviour
 
     private GameObject currentTargetPackage;
     private int totalScore = 0;
+
+    // Dialogue milestone flags
+    private bool triggered100 = false;
+    private bool triggered300 = false;
+    private bool triggered600 = false;
 
     void Start()
     {
@@ -162,9 +172,50 @@ public class QuestManager : MonoBehaviour
         activeDeliveries.Remove(deliveryPoint);
 
         UpdateScoreUI();
+        CheckScoreMilestones();
 
-        // Immediately re-evaluate state
         HandleQuestState();
+    }
+
+    // =====================================================
+    // DIALOGUE MILESTONES (UPDATED)
+    // =====================================================
+
+    void CheckScoreMilestones()
+    {
+        if (totalScore >= 100 && !triggered100)
+        {
+            triggered100 = true;
+
+            DialogueManager.Instance.StartDialogue(new DialogueLine[]
+            {
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Nice work!" },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "You've completed your first deliveries." },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Keep it up!" }
+            });
+        }
+
+        if (totalScore >= 300 && !triggered300)
+        {
+            triggered300 = true;
+
+            DialogueManager.Instance.StartDialogue(new DialogueLine[]
+            {
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Impressive!" },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "You're becoming a reliable courier." }
+            });
+        }
+
+        if (totalScore >= 600 && !triggered600)
+        {
+            triggered600 = true;
+
+            DialogueManager.Instance.StartDialogue(new DialogueLine[]
+            {
+                new DialogueLine { speakerName = "Dispatcher", sentence = "Outstanding performance!" },
+                new DialogueLine { speakerName = "Dispatcher", sentence = "You're one of the best couriers on the road!" }
+            });
+        }
     }
 
     void UpdateDeliveryQuestText()
@@ -179,9 +230,8 @@ public class QuestManager : MonoBehaviour
         {
             string list = "Deliver packages to:\n";
             foreach (DeliveryPoint dp in activeDeliveries)
-            {
                 list += dp.name + "\n";
-            }
+
             questText.text = list;
         }
     }

@@ -126,7 +126,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   triggerOnce: 1
-  shockwaveDelay: 1
+  shockwaveDelay: 0.05
   shockwaveRadius: 8
   shockwaveForce: 20
   upwardBoost: 0.5

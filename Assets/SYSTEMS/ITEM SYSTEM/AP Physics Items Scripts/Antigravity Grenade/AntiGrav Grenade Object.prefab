@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   antigravityFieldPrefab: {fileID: 3656495496491154968, guid: 8daa94fd23e4ee243a93c0ad9a3beae7, type: 3}
-  detonationDelay: 1.25
+  detonationDelay: 0.5
 --- !u!54 &8647852015000271035
 Rigidbody:
   m_ObjectHideFlags: 0

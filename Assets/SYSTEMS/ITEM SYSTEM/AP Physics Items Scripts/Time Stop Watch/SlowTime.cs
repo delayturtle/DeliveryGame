@@ -5,7 +5,7 @@ using Cinemachine;
 public class SlowTime : Item
 {
     private float fixedDeltaTime;
-    
+
     [Header("Slow Time Settings")]
     public float slowTimeDuration = 5.0f;
     public float slowTimeScale = 0.5f;
@@ -13,7 +13,7 @@ public class SlowTime : Item
     [Header("Camera Settings")]
     [Tooltip("FOV during normal time")]
     public float normalFOV = 60f;
-    
+
     [Tooltip("FOV during slow motion")]
     public float slowedFOV = 75f;
 
@@ -30,12 +30,11 @@ public class SlowTime : Item
 
     void Awake()
     {
-        this.fixedDeltaTime = Time.fixedDeltaTime;
+        fixedDeltaTime = Time.fixedDeltaTime;
     }
 
     void Start()
     {
-        // Find the UseItemController on the parent (player)
         itemController = GetComponentInParent<UseItemController>();
 
         // Auto-find AudioSource if not assigned
@@ -49,9 +48,11 @@ public class SlowTime : Item
         }
     }
 
-    public override void UseItem()
+    // ✅ Updated signature to match new Item base class
+    public override void UseItem(Vector3 direction)
     {
-        // Prevent using if already active
+        // Direction not needed for this item
+
         if (isActive)
         {
             Debug.Log("[SlowTime] Already active, cannot use again");
@@ -79,49 +80,44 @@ public class SlowTime : Item
                 Debug.LogWarning("[SlowTime] No activation sound clip assigned!");
         }
 
-        // Find the FreeLook camera at runtime
         freeLookCamera = FindObjectOfType<CinemachineFreeLook>();
-        
+
         if (freeLookCamera == null)
         {
             Debug.LogWarning("[SlowTime] No FreeLook camera found in scene!");
         }
 
-        // Start slow time
         Debug.Log("[SlowTime] Activating slow motion");
+
         Time.timeScale = slowTimeScale;
         Time.fixedDeltaTime = fixedDeltaTime * Time.timeScale;
 
-        // Smoothly transition FOV to slowed value
         if (freeLookCamera != null)
         {
-            yield return StartCoroutine(TransitionFOV(normalFOV, slowedFOV, fovTransitionTime));
-            Debug.Log($"[SlowTime] Transitioned camera FOV to {slowedFOV}");
+            yield return StartCoroutine(
+                TransitionFOV(normalFOV, slowedFOV, fovTransitionTime)
+            );
         }
 
-        // Wait for duration (in real time, not scaled time)
         yield return new WaitForSecondsRealtime(slowTimeDuration);
 
-        // Restore normal time
         Debug.Log("[SlowTime] Restoring normal time");
+
         Time.timeScale = 1.0f;
         Time.fixedDeltaTime = fixedDeltaTime;
 
-        // Smoothly transition FOV back to normal value
         if (freeLookCamera != null)
         {
-            yield return StartCoroutine(TransitionFOV(slowedFOV, normalFOV, fovTransitionTime));
-            Debug.Log($"[SlowTime] Restored camera FOV to {normalFOV}");
+            yield return StartCoroutine(
+                TransitionFOV(slowedFOV, normalFOV, fovTransitionTime)
+            );
         }
 
-        // Remove this item from the active slot
         if (itemController != null)
         {
             itemController.ActiveItem = null;
-            Debug.Log("[SlowTime] Removed from active item slot");
         }
 
-        // Destroy this item instance
         Destroy(gameObject);
     }
 
@@ -131,15 +127,16 @@ public class SlowTime : Item
 
         while (elapsed < duration)
         {
-            elapsed += Time.unscaledDeltaTime; // Use unscaled time so it works during slow-mo
+            elapsed += Time.unscaledDeltaTime;
+
             float t = Mathf.Clamp01(elapsed / duration);
-            
-            freeLookCamera.m_Lens.FieldOfView = Mathf.Lerp(startFOV, endFOV, t);
-            
+
+            freeLookCamera.m_Lens.FieldOfView =
+                Mathf.Lerp(startFOV, endFOV, t);
+
             yield return null;
         }
 
-        // Ensure final value is set
         freeLookCamera.m_Lens.FieldOfView = endFOV;
     }
 }

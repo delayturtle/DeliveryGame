@@ -32,13 +32,13 @@ public class TagGunItem : Item
 
     void UpdateLaser()
     {
-        if (vehicleRb == null || lineRenderer == null)
+        if (vehicleRb == null || lineRenderer == null || Camera.main == null)
             return;
 
         Transform vehicleTransform = vehicleRb.transform;
 
         Vector3 origin = vehicleTransform.position + Vector3.up * laserHeightOffset;
-        Vector3 direction = vehicleTransform.forward;
+        Vector3 direction = Camera.main.transform.forward;
 
         RaycastHit hit;
 
@@ -53,7 +53,7 @@ public class TagGunItem : Item
         lineRenderer.SetPosition(1, endPoint);
     }
 
-    public override void UseItem()
+    public override void UseItem(Vector3 direction)
     {
         if (vehicleRb == null)
             return;
@@ -61,7 +61,7 @@ public class TagGunItem : Item
         Transform vehicleTransform = vehicleRb.transform;
 
         Vector3 origin = vehicleTransform.position + Vector3.up * laserHeightOffset;
-        Vector3 direction = vehicleTransform.forward;
+        direction = direction.normalized;
 
         RaycastHit hit;
 
@@ -77,7 +77,7 @@ public class TagGunItem : Item
         }
 
         ClearActiveItem();
-        Destroy(gameObject); // Laser disappears here
+        Destroy(gameObject);
     }
 
     bool IsValidTag(string tagToCheck)
@@ -100,7 +100,9 @@ public class TagGunItem : Item
 
     void ClearActiveItem()
     {
-        UseItemController controller = vehicleRb.GetComponentInChildren<UseItemController>();
+        UseItemController controller =
+            vehicleRb.GetComponentInChildren<UseItemController>();
+
         if (controller != null)
             controller.ActiveItem = null;
     }
