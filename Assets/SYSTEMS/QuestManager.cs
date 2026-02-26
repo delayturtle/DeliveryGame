@@ -19,6 +19,10 @@ public class QuestManager : MonoBehaviour
     public GameObject compassArrowPrefab;
     public GameObject worldArrowPrefab;
 
+    [Header("Delivery SFX")]
+    public AudioSource deliveryAudio;
+    public AudioClip deliveryClip;
+
     private PlayerCompassArrow compassArrow;
     private FloatingArrow worldArrow;
 
@@ -71,7 +75,7 @@ public class QuestManager : MonoBehaviour
             currentTargetPackage = FindNearestPackage();
 
             if (questText != null)
-                questText.text = "Find a package!";
+                questText.text = "LOCATE APME CARGO";
 
             return;
         }
@@ -161,6 +165,12 @@ public class QuestManager : MonoBehaviour
 
         activeDeliveries.Remove(deliveryPoint);
 
+        // Play delivery sound
+        if (deliveryAudio != null && deliveryClip != null)
+        {
+            deliveryAudio.PlayOneShot(deliveryClip);
+        }
+
         UpdateScoreUI();
 
         // Immediately re-evaluate state
@@ -173,11 +183,11 @@ public class QuestManager : MonoBehaviour
 
         if (activeDeliveries.Count == 1)
         {
-            questText.text = "Deliver package to:\n" + activeDeliveries[0].name;
+            questText.text = "DELIVERY LOCATION:\n" + activeDeliveries[0].name;
         }
         else
         {
-            string list = "Deliver packages to:\n";
+            string list = "DELIVERY LOCATIONS:\n";
             foreach (DeliveryPoint dp in activeDeliveries)
             {
                 list += dp.name + "\n";
@@ -189,7 +199,7 @@ public class QuestManager : MonoBehaviour
     void UpdateScoreUI()
     {
         if (scoreText != null)
-            scoreText.text = "Score: " + totalScore;
+            scoreText.text = "$ " + totalScore;
     }
 
     // =====================================================
