@@ -28,13 +28,20 @@ public class VehicleController : MonoBehaviour
     public float gizmoRadius = 0.2f;
 
     [Header("Engine Audio")]
-    public AudioSource idleAudioSource;
-    public AudioSource drivingAudioSource;
+    public AudioSource engineAudioSource;
     public float minPitch = 0.8f;
     public float maxPitch = 2.0f;
     public float minSpeed = 0f;
     public float maxSpeed = 30f;
-    public float idleThreshold = 0.5f;
+    public float pitchSmoothSpeed = 3f;
+
+    [Header("Tire Screech Audio")]
+    public AudioSource tireScreechAudioSource;
+    public float skidThreshold = 0.3f;
+    public float maxSkidIntensity = 1.5f;
+    public float screechVolumeSmoothSpeed = 5f;
+    public float minSpeedForScreech = 2f;
+    public float minScreechVolume = 0.6f;
 
     public List<Wheel> wheels = new List<Wheel>();
 
@@ -44,7 +51,6 @@ public class VehicleController : MonoBehaviour
 
     private Rigidbody carRb;
     private Vector3 lastAppliedCoM;
-    private bool isPlayingIdle = false;
 
     void Awake()
     {
@@ -66,18 +72,18 @@ public class VehicleController : MonoBehaviour
         if (steerAction == null)
             Debug.LogWarning("[VehicleController] 'Steer' input action not found!");
         
-        if (idleAudioSource != null)
+        if (engineAudioSource != null)
         {
-            idleAudioSource.loop = true;
-            idleAudioSource.Play();
-            isPlayingIdle = true;
+            engineAudioSource.loop = true;
+            engineAudioSource.pitch = minPitch;
+            engineAudioSource.Play();
         }
-        
-        if (drivingAudioSource != null)
+
+        if (tireScreechAudioSource != null)
         {
-            drivingAudioSource.loop = true;
-            drivingAudioSource.volume = 0f;
-            drivingAudioSource.Play();
+            tireScreechAudioSource.loop = true;
+            tireScreechAudioSource.volume = 0f;
+            tireScreechAudioSource.Play();
         }
     }
 
@@ -101,6 +107,7 @@ public class VehicleController : MonoBehaviour
         }
 
         UpdateEngineAudio();
+        UpdateTireScreechAudio();
     }
 
     void FixedUpdate()
@@ -112,58 +119,64 @@ public class VehicleController : MonoBehaviour
 
     void UpdateEngineAudio()
     {
-        if (carRb == null || (idleAudioSource == null && drivingAudioSource == null))
+        if (carRb == null || engineAudioSource == null)
+            return;
+
+        float currentSpeed = carRb.linearVelocity.magnitude;
+        float speedFactor = Mathf.InverseLerp(minSpeed, maxSpeed, currentSpeed);
+        float targetPitch = Mathf.Lerp(minPitch, maxPitch, speedFactor);
+        
+        engineAudioSource.pitch = Mathf.Lerp(engineAudioSource.pitch, targetPitch, Time.deltaTime * pitchSmoothSpeed);
+    }
+
+    void UpdateTireScreechAudio()
+    {
+        if (tireScreechAudioSource == null || carRb == null)
             return;
 
         float currentSpeed = carRb.linearVelocity.magnitude;
 
-        if (currentSpeed < idleThreshold)
+        // Don't play screech if below minimum speed
+        if (currentSpeed < minSpeedForScreech)
         {
-            if (!isPlayingIdle)
-            {
-                if (idleAudioSource != null)
-                    idleAudioSource.volume = Mathf.Lerp(idleAudioSource.volume, 1f, Time.deltaTime * 5f);
-                if (drivingAudioSource != null)
-                    drivingAudioSource.volume = Mathf.Lerp(drivingAudioSource.volume, 0f, Time.deltaTime * 5f);
+            tireScreechAudioSource.volume = Mathf.Lerp(
+                tireScreechAudioSource.volume, 
+                0f, 
+                Time.deltaTime * screechVolumeSmoothSpeed
+            );
+            return;
+        }
 
-                if (idleAudioSource != null && idleAudioSource.volume > 0.9f)
-                    isPlayingIdle = true;
-            }
-            else
+        float maxSkid = 0f;
+
+        foreach (var w in wheels)
+        {
+            if (w.wheelCollider == null) continue;
+
+            WheelHit hit;
+            if (w.wheelCollider.GetGroundHit(out hit))
             {
-                if (idleAudioSource != null)
-                    idleAudioSource.volume = 1f;
-                if (drivingAudioSource != null)
-                    drivingAudioSource.volume = 0f;
+                float forwardSlip = Mathf.Abs(hit.forwardSlip);
+                float sidewaysSlip = Mathf.Abs(hit.sidewaysSlip);
+                float totalSlip = Mathf.Max(forwardSlip, sidewaysSlip);
+
+                if (totalSlip > maxSkid)
+                    maxSkid = totalSlip;
             }
         }
-        else
+
+        float targetVolume = 0f;
+        if (maxSkid > skidThreshold)
         {
-            if (isPlayingIdle)
-            {
-                if (idleAudioSource != null)
-                    idleAudioSource.volume = Mathf.Lerp(idleAudioSource.volume, 0f, Time.deltaTime * 5f);
-                if (drivingAudioSource != null)
-                    drivingAudioSource.volume = Mathf.Lerp(drivingAudioSource.volume, 1f, Time.deltaTime * 5f);
-
-                if (drivingAudioSource != null && drivingAudioSource.volume > 0.9f)
-                    isPlayingIdle = false;
-            }
-            else
-            {
-                if (idleAudioSource != null)
-                    idleAudioSource.volume = 0f;
-                if (drivingAudioSource != null)
-                    drivingAudioSource.volume = 1f;
-            }
-
-            if (drivingAudioSource != null)
-            {
-                float speedFactor = Mathf.InverseLerp(minSpeed, maxSpeed, currentSpeed);
-                float targetPitch = Mathf.Lerp(minPitch, maxPitch, speedFactor);
-                drivingAudioSource.pitch = Mathf.Lerp(drivingAudioSource.pitch, targetPitch, Time.deltaTime * 3f);
-            }
+            float skidIntensity = Mathf.InverseLerp(skidThreshold, maxSkidIntensity, maxSkid);
+            targetVolume = Mathf.Lerp(minScreechVolume, 1f, skidIntensity);
         }
+
+        tireScreechAudioSource.volume = Mathf.Lerp(
+            tireScreechAudioSource.volume, 
+            targetVolume, 
+            Time.deltaTime * screechVolumeSmoothSpeed
+        );
     }
 
     void Move()
