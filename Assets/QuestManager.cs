@@ -81,7 +81,7 @@ public int GetScore()
             currentTargetPackage = FindNearestPackage();
 
             if (questText != null)
-                questText.text = "Find a package!";
+                questText.text = "LOCATE APME CARGO";
 
             return;
         }
@@ -213,7 +213,7 @@ public int GetScore()
             DialogueManager.Instance.StartDialogue(new DialogueLine[]
             {
                 new DialogueLine { speakerName = "Dispatcher", sentence = "Outstanding performance!" },
-                new DialogueLine { speakerName = "Dispatcher", sentence = "You're one of the best couriers on the road!" }
+                new DialogueLine { speakerName = "Dispatcher", sentence = "JUST FUCKING STOP ALREADY. WE'RE OUT OF MONEY! WE DON'T NEED ANY MORE OF THESE FUCKING DOOHICKEYS!!!" }
             });
         }
     }
@@ -224,11 +224,11 @@ public int GetScore()
 
         if (activeDeliveries.Count == 1)
         {
-            questText.text = "DELIVERY LOCATION:\n" + activeDeliveries[0].name;
+            questText.text = "DROP OFF:\n" + activeDeliveries[0].name;
         }
         else
         {
-            string list = "DELIVERY LOCATIONS:\n";
+            string list = "DROP OFFS:\n";
             foreach (DeliveryPoint dp in activeDeliveries)
                 list += dp.name + "\n";
 

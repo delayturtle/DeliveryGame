@@ -53,9 +53,15 @@ public class EnemyVehicleHealth : MonoBehaviour
     [Tooltip("GameObject to enable when health reaches zero (e.g. wrecked model / ragdoll)")]
     public GameObject objectToEnableOnDeath;
 
+    [Tooltip("Time in seconds before destroying the GameObject after death")]
+    public float destroyDelay = 6f;
+
     [Header("Enemy AI Integration")]
     [Tooltip("Optional: Reference to EnemyAI script to disable AI on death")]
     public EnemyAI enemyAI;
+
+    [Tooltip("Optional: Reference to BattleChatter script to disable on death")]
+    public BattleChatter battleChatter;
 
     void Reset()
     {
@@ -69,6 +75,10 @@ public class EnemyVehicleHealth : MonoBehaviour
         // Try to auto-find EnemyAI if not assigned
         if (enemyAI == null)
             enemyAI = GetComponent<EnemyAI>();
+
+        // Try to auto-find BattleChatter if not assigned
+        if (battleChatter == null)
+            battleChatter = GetComponent<BattleChatter>();
         
         // Ensure all damage effects start disabled
         if (lightSmokeEffect != null)
@@ -221,6 +231,12 @@ public class EnemyVehicleHealth : MonoBehaviour
             enemyAI.enabled = false;
         }
 
+        // Disable the BattleChatter script if present
+        if (battleChatter != null)
+        {
+            battleChatter.enabled = false;
+        }
+
         // Disable the assigned object (if any)
         if (objectToDisableOnDeath != null)
         {
@@ -239,6 +255,9 @@ public class EnemyVehicleHealth : MonoBehaviour
         {
             rb.isKinematic = true;
         }
+
+        // Destroy the entire GameObject after delay
+        Destroy(gameObject, destroyDelay);
     }
 
     public bool IsDead()

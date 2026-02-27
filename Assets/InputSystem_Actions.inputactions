@@ -421,10 +421,10 @@
                 {
                     "name": "",
                     "id": "42009738-c56e-44ac-8492-5e3ebfd6998d",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard&Mouse",
                     "action": "Flip",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -432,7 +432,7 @@
                 {
                     "name": "",
                     "id": "602266e3-023f-421e-8241-8db0ad59d5f3",
-                    "path": "<Gamepad>/leftShoulder",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
