@@ -5,6 +5,9 @@ public class DeliveryPoint : MonoBehaviour
     [Header("Reward")]
     public int rewardPoints = 100;
 
+    public AudioSource DeliverySounds;
+    public AudioClip deliveryClip;
+
     [Header("Respawn Settings")]
     public float respawnTime = 15f;
 
@@ -39,6 +42,7 @@ public class DeliveryPoint : MonoBehaviour
         // Deliver ONE package
         questManager.CompleteDelivery(this);
         Destroy(other.gameObject);
+        DeliverySounds.PlayOneShot(deliveryClip);
 
         DisableZone();
     }
