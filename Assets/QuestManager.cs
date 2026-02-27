@@ -224,11 +224,11 @@ public int GetScore()
 
         if (activeDeliveries.Count == 1)
         {
-            questText.text = "Deliver package to:\n" + activeDeliveries[0].name;
+            questText.text = "DELIVERY LOCATION:\n" + activeDeliveries[0].name;
         }
         else
         {
-            string list = "Deliver packages to:\n";
+            string list = "DELIVERY LOCATIONS:\n";
             foreach (DeliveryPoint dp in activeDeliveries)
                 list += dp.name + "\n";
 
@@ -239,7 +239,7 @@ public int GetScore()
     void UpdateScoreUI()
     {
         if (scoreText != null)
-            scoreText.text = "Score: " + totalScore;
+            scoreText.text = "$ " + totalScore;
     }
 
     // =====================================================
