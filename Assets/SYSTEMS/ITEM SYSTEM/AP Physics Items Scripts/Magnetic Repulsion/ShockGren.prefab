@@ -127,9 +127,9 @@ MonoBehaviour:
     m_Bits: 4294967295
   triggerOnce: 1
   shockwaveDelay: 0.05
-  shockwaveRadius: 8
-  shockwaveForce: 20
-  upwardBoost: 0.5
+  shockwaveRadius: 10
+  shockwaveForce: 10
+  upwardBoost: 0.66
   useDistanceFalloff: 1
   forceFalloffCurve:
     serializedVersion: 2
@@ -145,7 +145,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0.25
+      value: 0.39999303
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -156,10 +156,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   compensateForMass: 1
-  baseMassReference: 10
-  playerMultiplier: 1.5
-  enemyMultiplier: 1.3
-  vehicleMultiplier: 2
+  baseMassReference: 1
+  playerMultiplier: 4
+  enemyMultiplier: 6
+  vehicleMultiplier: 6
   affectedTags:
   - Player
   - Enemy
