@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f0cb8d1324a3aa641b244ceca5c7b7a6
+guid: 8db585fbbe4ac9942837dd3b0fab7bcc
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Material.003
-    second: {fileID: 2100000, guid: 7cf96555f7028cb4b89e12e7c6102508, type: 2}
+      name: BackEmemyRed
+    second: {fileID: 2100000, guid: c6e88914c8abdb04f8dac238514098c3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
