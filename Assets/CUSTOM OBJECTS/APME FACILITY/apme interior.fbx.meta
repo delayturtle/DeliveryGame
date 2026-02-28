@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f0cb8d1324a3aa641b244ceca5c7b7a6
+guid: 730a47e26a03bc6458544338179c05b2
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,8 +7,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Material.003
-    second: {fileID: 2100000, guid: 7cf96555f7028cb4b89e12e7c6102508, type: 2}
+      name: APME Walls
+    second: {fileID: 2100000, guid: d0ea97d785a06f74c8874088020f29a2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: APME Walls Main
+    second: {fileID: 2100000, guid: b34b780ec98fffa409111017981abfb8, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: tile112
+    second: {fileID: 2800000, guid: af52fa76704796d47a74a1aaeb949894, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: tile354
+    second: {fileID: 2800000, guid: 23294738b1e817443a51d76d8ca97fef, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
