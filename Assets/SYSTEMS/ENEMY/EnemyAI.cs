@@ -32,13 +32,13 @@ public class EnemyAI : MonoBehaviour
     [Header("Obstacle Avoidance")]
     public bool enableObstacleAvoidance = true;
     public float obstacleDetectionDistance = 15f;
-    public float safetyMargin = 3f; // How far to stay away from obstacles
+    public float safetyMargin = 3f;
     public float obstacleAvoidanceForce = 3f;
     public float avoidancePriority = 0.9f;
     public LayerMask obstacleLayer = ~0;
     public int numberOfRays = 9;
     public float raySpreadAngle = 70f;
-    public float sideRayOffset = 1.5f; // Offset rays to sides of vehicle
+    public float sideRayOffset = 1.5f;
     public bool debugDrawRays = true;
 
     [Header("AI Behavior")]
@@ -48,7 +48,7 @@ public class EnemyAI : MonoBehaviour
     public float sharpTurnAngle = 45f;
     public float sharpTurnSpeedMultiplier = 0.5f;
 
-    [Header("Vehicle Physics (Same as VehicleController)")]
+    [Header("Vehicle Physics")]
     public float maxAcceleration = 30.0f;
     public float brakeAcceleration = 50.0f;
     public float maxMotorTorque = 1500f;
@@ -58,6 +58,22 @@ public class EnemyAI : MonoBehaviour
     public float turnSensitivity = 1.0f;
     public float maxSteeringAngle = 30.0f;
 
+    [Header("Engine Audio")]
+    public AudioSource engineAudioSource;
+    public float minPitch = 0.8f;
+    public float maxPitch = 2.0f;
+    public float minSpeedForPitch = 0f;
+    public float maxSpeedForPitch = 30f;
+    public float pitchSmoothSpeed = 3f;
+
+    [Header("Tire Screech Audio")]
+    public AudioSource tireScreechAudioSource;
+    public float skidThreshold = 0.3f;
+    public float maxSkidIntensity = 1.5f;
+    public float screechVolumeSmoothSpeed = 5f;
+    public float minSpeedForScreech = 2f;
+    public float minScreechVolume = 0.6f;
+
     [Header("Center of Mass")]
     public Vector3 _centerOfMass = Vector3.zero;
     public Color gizmoColor = Color.red;
@@ -66,7 +82,7 @@ public class EnemyAI : MonoBehaviour
     [Header("Wheels")]
     public List<Wheel> wheels = new List<Wheel>();
 
-    // AI-controlled inputs (replaces player input)
+    // AI-controlled inputs
     private float aiMoveInput;
     private float aiSteerInput;
     private float currentThrottle = 0f;
@@ -89,6 +105,22 @@ public class EnemyAI : MonoBehaviour
         if (autoTargetPlayer && targetPoint == null)
         {
             FindAndTargetPlayer();
+        }
+
+        // Initialize engine audio
+        if (engineAudioSource != null)
+        {
+            engineAudioSource.loop = true;
+            engineAudioSource.pitch = minPitch;
+            engineAudioSource.Play();
+        }
+
+        // Initialize tire screech audio
+        if (tireScreechAudioSource != null)
+        {
+            tireScreechAudioSource.loop = true;
+            tireScreechAudioSource.volume = 0f;
+            tireScreechAudioSource.Play();
         }
     }
 
@@ -129,6 +161,10 @@ public class EnemyAI : MonoBehaviour
             if (carRb != null && _centerOfMass != lastAppliedCoM)
                 ApplyCenterOfMass();
         }
+
+        // Update audio
+        UpdateEngineAudio();
+        UpdateTireScreechAudio();
     }
 
     void FixedUpdate()
@@ -137,6 +173,68 @@ public class EnemyAI : MonoBehaviour
         Move();
         Steer();
         UpdateWheelVisuals();
+    }
+
+    void UpdateEngineAudio()
+    {
+        if (carRb == null || engineAudioSource == null)
+            return;
+
+        float currentSpeed = carRb.linearVelocity.magnitude;
+        float speedFactor = Mathf.InverseLerp(minSpeedForPitch, maxSpeedForPitch, currentSpeed);
+        float targetPitch = Mathf.Lerp(minPitch, maxPitch, speedFactor);
+        
+        engineAudioSource.pitch = Mathf.Lerp(engineAudioSource.pitch, targetPitch, Time.deltaTime * pitchSmoothSpeed);
+    }
+
+    void UpdateTireScreechAudio()
+    {
+        if (tireScreechAudioSource == null || carRb == null)
+            return;
+
+        float currentSpeed = carRb.linearVelocity.magnitude;
+
+        // Don't play screech if below minimum speed
+        if (currentSpeed < minSpeedForScreech)
+        {
+            tireScreechAudioSource.volume = Mathf.Lerp(
+                tireScreechAudioSource.volume, 
+                0f, 
+                Time.deltaTime * screechVolumeSmoothSpeed
+            );
+            return;
+        }
+
+        float maxSkid = 0f;
+
+        foreach (var w in wheels)
+        {
+            if (w.wheelCollider == null) continue;
+
+            WheelHit hit;
+            if (w.wheelCollider.GetGroundHit(out hit))
+            {
+                float forwardSlip = Mathf.Abs(hit.forwardSlip);
+                float sidewaysSlip = Mathf.Abs(hit.sidewaysSlip);
+                float totalSlip = Mathf.Max(forwardSlip, sidewaysSlip);
+
+                if (totalSlip > maxSkid)
+                    maxSkid = totalSlip;
+            }
+        }
+
+        float targetVolume = 0f;
+        if (maxSkid > skidThreshold)
+        {
+            float skidIntensity = Mathf.InverseLerp(skidThreshold, maxSkidIntensity, maxSkid);
+            targetVolume = Mathf.Lerp(minScreechVolume, 1f, skidIntensity);
+        }
+
+        tireScreechAudioSource.volume = Mathf.Lerp(
+            tireScreechAudioSource.volume, 
+            targetVolume, 
+            Time.deltaTime * screechVolumeSmoothSpeed
+        );
     }
 
     void UpdateAIInputs()
@@ -164,13 +262,10 @@ public class EnemyAI : MonoBehaviour
         {
             float avoidanceSteering = GetObstacleAvoidanceSteering(out float obstacleDetected);
             
-            if (obstacleDetected > 0.1f) // If obstacle is detected
+            if (obstacleDetected > 0.1f)
             {
                 isAvoidingObstacle = true;
-                // Prioritize avoidance - blend heavily toward avoidance steering
                 aiSteerInput = Mathf.Lerp(targetSteering, avoidanceSteering, avoidancePriority);
-                
-                // Slow down when avoiding obstacles
                 aiMoveInput *= (1f - obstacleDetected * 0.5f);
             }
             else
@@ -189,23 +284,20 @@ public class EnemyAI : MonoBehaviour
 
         if (distanceToTarget > stoppingDistance)
         {
-            // Drive forward
             if (currentSpeed < maxSpeed)
             {
                 aiMoveInput = 1f;
             }
             else
             {
-                aiMoveInput = 0f; // Coast at max speed
+                aiMoveInput = 0f;
             }
 
-            // Slow down for sharp turns
             if (Mathf.Abs(angleToTarget) > sharpTurnAngle)
             {
                 aiMoveInput *= sharpTurnSpeedMultiplier;
             }
 
-            // Ensure minimum speed
             if (currentSpeed < minSpeed)
             {
                 aiMoveInput = 1f;
@@ -213,7 +305,6 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            // Brake when within stopping distance
             aiMoveInput = -1f;
         }
     }
@@ -222,56 +313,38 @@ public class EnemyAI : MonoBehaviour
     {
         float avoidanceSteering = 0f;
         obstacleStrength = 0f;
-        Vector3 rayOrigin = transform.position + Vector3.up * 0.5f; // Slightly above ground
+        Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
 
         float closestObstacleDistance = obstacleDetectionDistance;
         float preferredSteerDirection = 0f;
 
-        // Cast multiple rays in a cone in front of the vehicle
         for (int i = 0; i < numberOfRays; i++)
         {
-            // Calculate angle for this ray
-            float t = numberOfRays > 1 ? (float)i / (numberOfRays - 1) : 0.5f; // 0 to 1
+            float t = numberOfRays > 1 ? (float)i / (numberOfRays - 1) : 0.5f;
             float angle = Mathf.Lerp(-raySpreadAngle, raySpreadAngle, t);
-            
-            // Calculate ray direction
             Vector3 rayDirection = Quaternion.Euler(0, angle, 0) * transform.forward;
             
             RaycastHit hit;
             if (Physics.Raycast(rayOrigin, rayDirection, out hit, obstacleDetectionDistance, obstacleLayer))
             {
-                // Ignore self collisions
                 if (hit.collider.transform.IsChildOf(transform) || hit.collider.transform == transform)
                     continue;
 
-                // Track closest obstacle
                 if (hit.distance < closestObstacleDistance)
                 {
                     closestObstacleDistance = hit.distance;
                 }
 
-                // Calculate avoidance strength based on:
-                // 1. How close the obstacle is (closer = stronger)
-                // 2. How centered the ray is (center rays = stronger avoidance)
                 float distanceFactor = 1f - (hit.distance / obstacleDetectionDistance);
                 float angleFactor = 1f - (Mathf.Abs(angle) / raySpreadAngle);
                 float rayAvoidanceStrength = distanceFactor * angleFactor;
 
-                // Accumulate obstacle strength
                 obstacleStrength = Mathf.Max(obstacleStrength, rayAvoidanceStrength);
 
-                // Determine which way to steer
-                // If obstacle is on the right (positive angle), steer left (negative)
-                // If obstacle is on the left (negative angle), steer right (positive)
                 float steerDirection = -Mathf.Sign(angle);
-                
-                // Weight the steering direction by how strong this detection is
                 preferredSteerDirection += steerDirection * rayAvoidanceStrength;
-                
-                // Accumulate avoidance steering
                 avoidanceSteering += steerDirection * rayAvoidanceStrength * obstacleAvoidanceForce;
 
-                // Debug visualization
                 if (debugDrawRays)
                 {
                     Debug.DrawRay(rayOrigin, rayDirection * hit.distance, Color.red);
@@ -279,7 +352,6 @@ public class EnemyAI : MonoBehaviour
             }
             else
             {
-                // No hit - draw green ray
                 if (debugDrawRays)
                 {
                     Debug.DrawRay(rayOrigin, rayDirection * obstacleDetectionDistance, Color.green);
@@ -287,10 +359,8 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        // If we detected an obstacle, make sure we're steering away strongly
         if (obstacleStrength > 0.1f)
         {
-            // Normalize and amplify the steering
             avoidanceSteering = Mathf.Sign(preferredSteerDirection) * Mathf.Clamp01(obstacleStrength) * obstacleAvoidanceForce;
         }
 
@@ -347,7 +417,7 @@ public class EnemyAI : MonoBehaviour
             else
             {
                 motor = 0f;
-                brake = 0f; // Coast
+                brake = 0f;
             }
 
             w.wheelCollider.motorTorque = motor;
@@ -405,7 +475,6 @@ public class EnemyAI : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // Draw center of mass
         Vector3 worldCoM;
         Rigidbody rb = carRb ? carRb : GetComponent<Rigidbody>();
         if (rb != null)
@@ -417,7 +486,6 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawSphere(worldCoM, gizmoRadius);
         Gizmos.DrawWireSphere(worldCoM, gizmoRadius * 1.2f);
 
-        // Draw AI target info
         if (targetPoint != null)
         {
             Gizmos.color = isAvoidingObstacle ? Color.red : Color.cyan;
@@ -425,13 +493,11 @@ public class EnemyAI : MonoBehaviour
             Gizmos.DrawWireSphere(targetPoint.position, stoppingDistance);
         }
 
-        // Draw obstacle detection cone
         if (enableObstacleAvoidance)
         {
             Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
             Gizmos.color = isAvoidingObstacle ? Color.red : Color.yellow;
             
-            // Draw cone edges
             Vector3 leftDir = Quaternion.Euler(0, -raySpreadAngle, 0) * transform.forward;
             Vector3 rightDir = Quaternion.Euler(0, raySpreadAngle, 0) * transform.forward;
             
