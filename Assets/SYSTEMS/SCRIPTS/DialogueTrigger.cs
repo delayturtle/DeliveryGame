@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class DialogueTrigger : MonoBehaviour
 {
@@ -24,7 +25,19 @@ public class DialogueTrigger : MonoBehaviour
     [Header("Dialogue")]
     public DialogueLine[] dialogueLines;
 
+    [Header("Events")]
+    public UnityEvent onDialogueComplete;
+
     private bool hasTriggered = false;
+
+    void Start()
+    {
+        // Auto-trigger at scene start if Manual
+        if (triggerType == TriggerType.Manual)
+        {
+            ActivateDialogue();
+        }
+    }
 
     void Update()
     {
@@ -78,8 +91,18 @@ public class DialogueTrigger : MonoBehaviour
         if (dialogueLines == null || dialogueLines.Length == 0)
             return;
 
+        hasTriggered = true;
+
         DialogueManager.Instance.StartDialogue(dialogueLines);
 
-        hasTriggered = true;
+        // Subscribe to completion event
+        DialogueManager.Instance.OnDialogueFinished += HandleDialogueFinished;
+    }
+
+    void HandleDialogueFinished()
+    {
+        DialogueManager.Instance.OnDialogueFinished -= HandleDialogueFinished;
+
+        onDialogueComplete?.Invoke();
     }
 }

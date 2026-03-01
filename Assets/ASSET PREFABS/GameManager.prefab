@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &554663482255126199
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2946211379634219331}
+  - component: {fileID: 5698474932209636481}
+  - component: {fileID: 9213362956458843074}
+  - component: {fileID: 4173921869239616179}
+  - component: {fileID: 8936685756814663377}
+  m_Layer: 3
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2946211379634219331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554663482255126199}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.000000014901161, z: -0, w: 1}
+  m_LocalPosition: {x: -339.11804, y: 19.28003, z: -135.42}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5698474932209636481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554663482255126199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f510caa3d5ea20459c8105b0f352c25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inventory: {fileID: 0}
+  questText: {fileID: 0}
+  scoreText: {fileID: 0}
+  searchRadius: 1000
+  allDeliveryPoints:
+  - {fileID: 0}
+  compassArrowPrefab: {fileID: 2952867568347357460, guid: 7f27de671f4ba854ba7b5d3333a68d80, type: 3}
+  worldArrowPrefab: {fileID: 7676558404219813203, guid: 91cf0e19ce42ce3498304f265dfcc12d, type: 3}
+--- !u!114 &9213362956458843074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554663482255126199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc0bdbfdd7494b48b40ba6b79347493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialoguePanel: {fileID: 0}
+  speakerNameText: {fileID: 0}
+  dialogueText: {fileID: 0}
+  textSpeed: 0.001
+  autoAdvance: 1
+  autoAdvanceDelay: 5
+  freezeTimeDuringDialogue: 0
+  frozenTimeScale: 0
+  audioSource: {fileID: 0}
+  typingSound: {fileID: 0}
+  soundFrequency: 0.05
+  playerInput: {fileID: 0}
+--- !u!114 &4173921869239616179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554663482255126199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c0899b85842cc842b4c8af09dbcacdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemController: {fileID: 0}
+  itemDisplayContainer: {fileID: 0}
+  itemNameText: {fileID: 0}
+  itemIconImage: {fileID: 0}
+--- !u!114 &8936685756814663377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554663482255126199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58a1d7d6b4f249c45a5356d2b56b3934, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  introCamera: {fileID: 0}
+  gameplayCamera: {fileID: 0}
+  fadeImage: {fileID: 0}
+  fadeOutDuration: 1
+  fadeInDuration: 1.5
+  playerInput: {fileID: 0}
+  gameplayActionMap: Player
+  cutsceneActionMap: Dialogue
+  gameplayUIRoot: {fileID: 0}
+  tvAudioFilter: {fileID: 0}
+  tvLowPassFrequency: 800

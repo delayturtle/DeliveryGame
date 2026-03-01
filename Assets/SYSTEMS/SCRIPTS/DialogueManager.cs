@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using System;
 
 [System.Serializable]
 public class DialogueLine
@@ -13,14 +14,25 @@ public class DialogueLine
     public string sentence;
 }
 
+
+
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
+
+    // ✅ NEW EVENT
+    public event Action OnDialogueFinished;
 
     [Header("UI References")]
     public GameObject dialoguePanel;
     public TextMeshProUGUI speakerNameText;
     public TextMeshProUGUI dialogueText;
+
+public void ForceEndDialogue()
+{
+    StopAllCoroutines();
+    OnDialogueFinished?.Invoke();
+}
 
     [Header("Typing Settings")]
     [Range(0.001f, 0.1f)]
@@ -128,7 +140,6 @@ public class DialogueManager : MonoBehaviour
 
     public void DisplayNextLine()
     {
-        // If currently typing → finish instantly
         if (isTyping)
         {
             StopCoroutine(typingCoroutine);
@@ -137,7 +148,6 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        // If waiting for auto advance → skip waiting
         if (waitingForAutoAdvance)
         {
             waitingForAutoAdvance = false;
@@ -174,7 +184,6 @@ public class DialogueManager : MonoBehaviour
         {
             dialogueText.text += c;
 
-            // Voice bleeps
             if (typingSound != null && audioSource != null)
             {
                 soundTimer += textSpeed;
@@ -213,7 +222,14 @@ public class DialogueManager : MonoBehaviour
     {
         dialoguePanel.SetActive(false);
 
+        StopAllCoroutines();
+        isTyping = false;
+        waitingForAutoAdvance = false;
+
         if (freezeTimeDuringDialogue)
             Time.timeScale = originalTimeScale;
+
+        // ✅ Invoke event AFTER everything is cleaned up
+        OnDialogueFinished?.Invoke();
     }
 }
