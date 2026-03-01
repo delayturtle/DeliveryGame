@@ -1,7 +1,8 @@
-
 using UnityEngine;
+using UnityEngine.Events;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Rigidbody))
+]
 public class VehicleHealth : MonoBehaviour
 {
     [Header("Health")]
@@ -26,6 +27,7 @@ public class VehicleHealth : MonoBehaviour
 
     private float lastDamageTime = -10f;
     private bool isDead = false;
+    private float deathTime = 0f;
 
     [Header("Damage Audio")]
     public AudioSource damageAudioSource;
@@ -54,6 +56,23 @@ public class VehicleHealth : MonoBehaviour
     [Tooltip("GameObject to enable when health reaches zero (e.g. wrecked model / ragdoll)")]
     public GameObject objectToEnableOnDeath;
 
+    [System.Serializable]
+    public class DeathEvent
+    {
+        [Tooltip("Time in seconds after death when this event triggers")]
+        public float delay;
+        
+        [Tooltip("Event to trigger at this time")]
+        public UnityEvent onTrigger;
+        
+        [HideInInspector]
+        public bool hasTriggered = false;
+    }
+
+    [Header("Timed Death Events")]
+    [Tooltip("Events that trigger at specific times after death")]
+    public DeathEvent[] deathEvents;
+
     void Reset()
     {
         currentHealth = maxHealth;
@@ -70,6 +89,38 @@ public class VehicleHealth : MonoBehaviour
             heavySmokeEffect.SetActive(false);
         if (fireEffect != null)
             fireEffect.SetActive(false);
+
+        // Reset all death event flags
+        if (deathEvents != null)
+        {
+            for (int i = 0; i < deathEvents.Length; i++)
+            {
+                deathEvents[i].hasTriggered = false;
+            }
+        }
+    }
+
+    void Update()
+    {
+        // Check and trigger death events
+        if (isDead)
+        {
+            float timeSinceDeath = Time.time - deathTime;
+            
+            if (deathEvents != null)
+            {
+                for (int i = 0; i < deathEvents.Length; i++)
+                {
+                    if (!deathEvents[i].hasTriggered && timeSinceDeath >= deathEvents[i].delay)
+                    {
+                        deathEvents[i].hasTriggered = true;
+                        deathEvents[i].onTrigger?.Invoke();
+                        
+                        Debug.Log($"[VehicleHealth] Death event {i} triggered at {timeSinceDeath:F2}s after death");
+                    }
+                }
+            }
+        }
     }
 
     void OnCollisionEnter(Collision collision)
@@ -211,6 +262,7 @@ public class VehicleHealth : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
+        deathTime = Time.time;
 
         Debug.Log("YOU'RE DIED!!!");
 

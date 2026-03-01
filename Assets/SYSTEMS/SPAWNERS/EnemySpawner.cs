@@ -6,8 +6,11 @@ public class EnemySpawner : MonoBehaviour
     [Tooltip("Enemy prefab to spawn")]
     public GameObject enemyPrefab;
 
-    [Tooltip("Time between spawns (seconds)")]
-    public float spawnInterval = 5f;
+    [Tooltip("Minimum time between spawns (seconds)")]
+    public float minSpawnInterval = 3f;
+
+    [Tooltip("Maximum time between spawns (seconds)")]
+    public float maxSpawnInterval = 8f;
 
     [Tooltip("Maximum number of enemies allowed in the scene")]
     public int maxEnemyCapacity = 10;
@@ -23,33 +26,115 @@ public class EnemySpawner : MonoBehaviour
     [Tooltip("Height offset above spawner position")]
     public float spawnHeightOffset = 0.5f;
 
+    [Header("Camera Visibility")]
+    [Tooltip("Pause spawning when visible to player camera")]
+    public bool pauseWhenVisible = true;
+
+    [Tooltip("Player camera (auto-finds if null)")]
+    public Camera playerCamera;
+
+    [Tooltip("Additional buffer distance for visibility check")]
+    public float visibilityBuffer = 2f;
+
     [Header("Debug")]
     public bool showDebugInfo = false;
+    public bool showVisibilityDebug = false;
 
     private float nextSpawnTime;
     private int currentEnemyCount = 0;
+    private bool isVisibleToCamera = false;
 
     void Start()
     {
-        nextSpawnTime = Time.time + spawnInterval;
+        // Set initial random spawn time
+        nextSpawnTime = Time.time + Random.Range(minSpawnInterval, maxSpawnInterval);
+
+        // Auto-find player camera if not assigned
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+            if (playerCamera == null)
+            {
+                Debug.LogWarning("[EnemySpawner] No player camera found! Visibility check disabled.");
+            }
+        }
     }
 
     void Update()
     {
+        // Check if spawner is visible to camera
+        if (pauseWhenVisible && playerCamera != null)
+        {
+            isVisibleToCamera = IsVisibleToCamera();
+        }
+        else
+        {
+            isVisibleToCamera = false;
+        }
+
         // Count current enemies in scene
         UpdateEnemyCount();
 
-        // Check if we should spawn
-        if (Time.time >= nextSpawnTime && currentEnemyCount < maxEnemyCapacity)
+        // Check if we should spawn (not if visible to camera)
+        if (Time.time >= nextSpawnTime && currentEnemyCount < maxEnemyCapacity && !isVisibleToCamera)
         {
             SpawnEnemy();
-            nextSpawnTime = Time.time + spawnInterval;
+            // Set next spawn time with random interval
+            nextSpawnTime = Time.time + Random.Range(minSpawnInterval, maxSpawnInterval);
         }
 
         if (showDebugInfo)
         {
-            Debug.Log($"[EnemySpawner] Enemies: {currentEnemyCount}/{maxEnemyCapacity}");
+            Debug.Log($"[EnemySpawner] Enemies: {currentEnemyCount}/{maxEnemyCapacity}, Visible: {isVisibleToCamera}");
         }
+    }
+
+    bool IsVisibleToCamera()
+    {
+        if (playerCamera == null)
+            return false;
+
+        Vector3 spawnCenter = transform.position + Vector3.up * spawnHeightOffset;
+
+        // Check if point is within camera frustum
+        Vector3 viewportPoint = playerCamera.WorldToViewportPoint(spawnCenter);
+
+        // Check if point is in front of camera and within viewport bounds (with buffer)
+        bool isInFrustum = viewportPoint.z > 0 && 
+                           viewportPoint.x >= -visibilityBuffer && viewportPoint.x <= 1f + visibilityBuffer &&
+                           viewportPoint.y >= -visibilityBuffer && viewportPoint.y <= 1f + visibilityBuffer;
+
+        if (!isInFrustum)
+            return false;
+
+        // Raycast to check if spawner is actually visible (not blocked by objects)
+        Vector3 directionToCamera = playerCamera.transform.position - spawnCenter;
+        float distanceToCamera = directionToCamera.magnitude;
+
+        RaycastHit hit;
+        if (Physics.Raycast(spawnCenter, directionToCamera.normalized, out hit, distanceToCamera))
+        {
+            // If raycast hits the camera or nothing blocks the view, it's visible
+            if (hit.collider.gameObject == playerCamera.gameObject || 
+                hit.collider.transform.IsChildOf(playerCamera.transform))
+            {
+                return true;
+            }
+
+            // If something else is blocking the view, it's not visible
+            if (showVisibilityDebug)
+            {
+                Debug.DrawLine(spawnCenter, hit.point, Color.green, 0.1f);
+            }
+            return false;
+        }
+
+        // Nothing blocking, spawner is visible
+        if (showVisibilityDebug)
+        {
+            Debug.DrawLine(spawnCenter, playerCamera.transform.position, Color.red, 0.1f);
+        }
+        return true;
     }
 
     void UpdateEnemyCount()
@@ -97,7 +182,7 @@ public class EnemySpawner : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         // Draw spawn position
-        Gizmos.color = Color.red;
+        Gizmos.color = isVisibleToCamera ? Color.red : Color.green;
         Vector3 spawnCenter = transform.position + Vector3.up * spawnHeightOffset;
         Gizmos.DrawWireSphere(spawnCenter, 0.5f);
 
@@ -111,5 +196,12 @@ public class EnemySpawner : MonoBehaviour
         // Draw capacity info
         Gizmos.color = Color.cyan;
         Gizmos.DrawLine(transform.position, spawnCenter);
+
+        // Draw line to camera if visible
+        if (pauseWhenVisible && playerCamera != null && isVisibleToCamera)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(spawnCenter, playerCamera.transform.position);
+        }
     }
 }

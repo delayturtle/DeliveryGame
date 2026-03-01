@@ -16,6 +16,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "NextDialogue",
+                    "type": "Button",
+                    "id": "83c2ebf3-a78c-4a21-a9f1-c50ab007e6d5",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Attack",
                     "type": "Button",
                     "id": "6c2ab1b8-8984-453a-af3d-a3c78ae1679a",
@@ -131,15 +140,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "NextDialogue",
-                    "type": "Button",
-                    "id": "b823dc95-4d0c-4c8a-9e52-a6768d04a0f2",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -173,6 +173,17 @@
                     "processors": "",
                     "groups": "Joystick",
                     "action": "Look",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6dc643dd-df8d-496e-b7d4-b64c73deb348",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "NextDialogue",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -421,10 +432,10 @@
                 {
                     "name": "",
                     "id": "42009738-c56e-44ac-8492-5e3ebfd6998d",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard&Mouse",
                     "action": "Flip",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -432,7 +443,7 @@
                 {
                     "name": "",
                     "id": "602266e3-023f-421e-8241-8db0ad59d5f3",
-                    "path": "<Gamepad>/leftShoulder",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -602,17 +613,6 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "GrabItem",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7ceaa530-93c2-45d0-abb4-a11409b5bab5",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "NextDialogue",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -1129,6 +1129,54 @@
                     "processors": "",
                     "groups": "XR",
                     "action": "TrackedDeviceOrientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Dialogue",
+            "id": "a28da18f-bd87-4f5d-966d-894398acf4b0",
+            "actions": [
+                {
+                    "name": "Skip",
+                    "type": "Button",
+                    "id": "49e282e0-f182-4ed5-887d-848745889dc3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Advance",
+                    "type": "Button",
+                    "id": "25298bf6-f159-4c94-9bdf-7b8855c4ebd2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "023fa63f-36bd-486a-bf9f-e768d7d20f0f",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Skip",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2805881e-01a3-46cd-b512-ff8ff322092f",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Advance",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

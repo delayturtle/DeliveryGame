@@ -6,6 +6,9 @@ public class TruckPowerupHandler : MonoBehaviour
     public TruckInventory inventory;
     public UseItemController itemController;
 
+    public AudioSource GrabItemSource;
+    public AudioClip grabItem;
+
     private InputAction grabItemAction;
 
     void Start()
@@ -67,6 +70,9 @@ public class TruckPowerupHandler : MonoBehaviour
             }
 
             itemController.ActiveItem = item;
+
+            GrabItemSource.PlayOneShot(grabItem);
+
         }
         else
         {
