@@ -122129,15 +122129,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 8229680671439948968, guid: cabf428e53bb10f489c4b2bfd5d80636, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -115.1425
+      value: -384.3
       objectReference: {fileID: 0}
     - target: {fileID: 8229680671439948968, guid: cabf428e53bb10f489c4b2bfd5d80636, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.7
+      value: -51.7
       objectReference: {fileID: 0}
     - target: {fileID: 8229680671439948968, guid: cabf428e53bb10f489c4b2bfd5d80636, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -289.404
+      value: 900.6
       objectReference: {fileID: 0}
     - target: {fileID: 8229680671439948968, guid: cabf428e53bb10f489c4b2bfd5d80636, type: 3}
       propertyPath: m_LocalRotation.w
@@ -182206,6 +182206,10 @@ PrefabInstance:
       propertyPath: field of view
       value: 90
       objectReference: {fileID: 0}
+    - target: {fileID: 2555103328737622667, guid: 7fbb42eb9044bbd41876b900494c6b87, type: 3}
+      propertyPath: m_TargetTexture
+      value: 
+      objectReference: {fileID: 8400000, guid: abcd3732f76f0af4089218ddeb901c72, type: 2}
     - target: {fileID: 2593477132576994512, guid: 7fbb42eb9044bbd41876b900494c6b87, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -182326,6 +182330,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 2099652577}
+    - target: {fileID: 6672278554444515138, guid: 7fbb42eb9044bbd41876b900494c6b87, type: 3}
+      propertyPath: m_TagString
+      value: MainCamera
+      objectReference: {fileID: 0}
     - target: {fileID: 6708584142452668672, guid: 7fbb42eb9044bbd41876b900494c6b87, type: 3}
       propertyPath: m_Mesh
       value: 

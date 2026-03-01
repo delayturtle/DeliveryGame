@@ -17,14 +17,17 @@ public class TagGunItem : Item
     void Start()
     {
         vehicleRb = GetComponentInParent<Rigidbody>();
+       
         lineRenderer = GetComponent<LineRenderer>();
+        
 
         if (lineRenderer != null)
         {
+            lineRenderer.enabled = true;
             lineRenderer.positionCount = 2;
         }
     }
-
+  
     void Update()
     {
         UpdateLaser();
@@ -38,6 +41,7 @@ public class TagGunItem : Item
         Transform vehicleTransform = vehicleRb.transform;
 
         Vector3 origin = vehicleTransform.position + Vector3.up * laserHeightOffset;
+        
         Vector3 direction = Camera.main.transform.forward;
 
         RaycastHit hit;
@@ -106,4 +110,5 @@ public class TagGunItem : Item
         if (controller != null)
             controller.ActiveItem = null;
     }
+    
 }
