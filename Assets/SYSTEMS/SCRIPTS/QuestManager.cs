@@ -5,27 +5,35 @@ using System.Collections.Generic;
 public class QuestManager : MonoBehaviour
 {
     [Header("References")]
-    public TruckInventory inventory;
     public TextMeshProUGUI questText;
     public TextMeshProUGUI scoreText;
 
+    [Header("Respawn Settings")]
+    public int respawnScorePenalty = 100;
+
     [Header("Package Search")]
     public float searchRadius = 50f;
+
+    [Header("Delivery Points")]
+    public List<DeliveryPoint> allDeliveryPoints = new List<DeliveryPoint>();
 
 public int GetScore()
 {
     return totalScore;
 }
 
-    [Header("Delivery Points")]
-    public List<DeliveryPoint> allDeliveryPoints = new List<DeliveryPoint>();
-
     [Header("Arrow Prefabs")]
     public GameObject compassArrowPrefab;
     public GameObject worldArrowPrefab;
 
+    [Header("Score Settings")]
+    public int maxScore = 45000;
+
+    private TruckInventory inventory;
     private PlayerCompassArrow compassArrow;
     private FloatingArrow worldArrow;
+
+    private Transform currentPlayerTransform;
 
     private List<DeliveryPoint> activeDeliveries = new List<DeliveryPoint>();
     private DeliveryPoint lastDeliveryPoint;
@@ -33,20 +41,26 @@ public int GetScore()
     private GameObject currentTargetPackage;
     private int totalScore = 0;
 
-    // Dialogue milestone flags
     private bool triggered100 = false;
     private bool triggered300 = false;
     private bool triggered600 = false;
 
+    void OnEnable()
+    {
+        RespawnManager.OnPlayerRespawned += ApplyRespawnPenalty;
+    }
+
+    void OnDisable()
+    {
+        RespawnManager.OnPlayerRespawned -= ApplyRespawnPenalty;
+    }
+
     void Start()
     {
-        if (compassArrowPrefab != null && inventory != null)
+        if (compassArrowPrefab != null)
         {
             GameObject compassObj = Instantiate(compassArrowPrefab);
             compassArrow = compassObj.GetComponent<PlayerCompassArrow>();
-
-            if (compassArrow != null)
-                compassArrow.player = inventory.transform;
         }
 
         if (worldArrowPrefab != null)
@@ -60,12 +74,74 @@ public int GetScore()
 
     void Update()
     {
+        UpdatePlayerReference();
         HandleQuestState();
         UpdateArrowTargets();
     }
 
     // =====================================================
-    // QUEST STATE MANAGEMENT
+    // RESPAWN PENALTY
+    // =====================================================
+
+    void ApplyRespawnPenalty()
+    {
+        totalScore -= respawnScorePenalty;
+        totalScore = Mathf.Max(0, totalScore);
+
+        UpdateScoreUI();
+
+        Debug.Log("Respawn penalty applied.");
+    }
+
+    // =====================================================
+    // PLAYER DETECTION
+    // =====================================================
+
+    void UpdatePlayerReference()
+    {
+        if (RespawnManager.Instance == null)
+            return;
+
+        Transform activePlayer = RespawnManager.Instance.GetActivePlayerTransform();
+
+        if (activePlayer == currentPlayerTransform)
+            return;
+
+        currentPlayerTransform = activePlayer;
+
+        if (currentPlayerTransform == null)
+        {
+            inventory = null;
+
+            if (compassArrow != null)
+                compassArrow.gameObject.SetActive(false);
+
+            if (worldArrow != null)
+                worldArrow.gameObject.SetActive(false);
+
+            return;
+        }
+
+        inventory = currentPlayerTransform.GetComponentInChildren<TruckInventory>();
+
+        if (inventory == null)
+        {
+            Debug.LogWarning("QuestManager: No TruckInventory found on player.");
+            return;
+        }
+
+        if (compassArrow != null)
+        {
+            compassArrow.player = currentPlayerTransform;
+            compassArrow.gameObject.SetActive(true);
+        }
+
+        if (worldArrow != null)
+            worldArrow.gameObject.SetActive(true);
+    }
+
+    // =====================================================
+    // QUEST STATE
     // =====================================================
 
     void HandleQuestState()
@@ -74,7 +150,6 @@ public int GetScore()
 
         int packageCount = inventory.GetPackageCount();
 
-        // SEARCH MODE
         if (packageCount == 0)
         {
             activeDeliveries.Clear();
@@ -86,7 +161,6 @@ public int GetScore()
             return;
         }
 
-        // DELIVERY MODE
         if (activeDeliveries.Count < packageCount)
         {
             int missing = packageCount - activeDeliveries.Count;
@@ -96,12 +170,10 @@ public int GetScore()
         UpdateDeliveryQuestText();
     }
 
-    // =====================================================
-    // PACKAGE SEARCH
-    // =====================================================
-
     GameObject FindNearestPackage()
     {
+        if (inventory == null) return null;
+
         Collider[] hits = Physics.OverlapSphere(
             inventory.transform.position,
             searchRadius,
@@ -127,10 +199,6 @@ public int GetScore()
 
         return closestPackage;
     }
-
-    // =====================================================
-    // DELIVERY ASSIGNMENT
-    // =====================================================
 
     void AssignDeliveries(int amountToAssign)
     {
@@ -173,49 +241,7 @@ public int GetScore()
 
         UpdateScoreUI();
         CheckScoreMilestones();
-
         HandleQuestState();
-    }
-
-    // =====================================================
-    // DIALOGUE MILESTONES (UPDATED)
-    // =====================================================
-
-    void CheckScoreMilestones()
-    {
-        if (totalScore >= 100 && !triggered100)
-        {
-            triggered100 = true;
-
-            DialogueManager.Instance.StartDialogue(new DialogueLine[]
-            {
-                new DialogueLine { speakerName = "Dispatcher", sentence = "Nice work!" },
-                new DialogueLine { speakerName = "Dispatcher", sentence = "You've completed your first deliveries." },
-                new DialogueLine { speakerName = "Dispatcher", sentence = "Keep it up!" }
-            });
-        }
-
-        if (totalScore >= 300 && !triggered300)
-        {
-            triggered300 = true;
-
-            DialogueManager.Instance.StartDialogue(new DialogueLine[]
-            {
-                new DialogueLine { speakerName = "Dispatcher", sentence = "Impressive!" },
-                new DialogueLine { speakerName = "Dispatcher", sentence = "You're becoming a reliable courier." }
-            });
-        }
-
-        if (totalScore >= 600 && !triggered600)
-        {
-            triggered600 = true;
-
-            DialogueManager.Instance.StartDialogue(new DialogueLine[]
-            {
-                new DialogueLine { speakerName = "Dispatcher", sentence = "Outstanding performance!" },
-                new DialogueLine { speakerName = "Dispatcher", sentence = "JUST FUCKING STOP ALREADY. WE'RE OUT OF MONEY! WE DON'T NEED ANY MORE OF THESE FUCKING DOOHICKEYS!!!" }
-            });
-        }
     }
 
     void UpdateDeliveryQuestText()
@@ -223,9 +249,7 @@ public int GetScore()
         if (questText == null) return;
 
         if (activeDeliveries.Count == 1)
-        {
             questText.text = "DROP OFF:\n" + activeDeliveries[0].name;
-        }
         else
         {
             string list = "DROP OFFS:\n";
@@ -239,12 +263,8 @@ public int GetScore()
     void UpdateScoreUI()
     {
         if (scoreText != null)
-            scoreText.text = "$ " + totalScore;
+            scoreText.text = "Score " + totalScore + " / " + maxScore;
     }
-
-    // =====================================================
-    // ARROW SYSTEM
-    // =====================================================
 
     void UpdateArrowTargets()
     {
@@ -273,6 +293,8 @@ public int GetScore()
 
     DeliveryPoint GetClosestDelivery()
     {
+        if (inventory == null) return null;
+
         float closestDistance = Mathf.Infinity;
         DeliveryPoint closest = null;
 
@@ -293,11 +315,15 @@ public int GetScore()
         return closest;
     }
 
-    private void OnDrawGizmosSelected()
+    void CheckScoreMilestones()
     {
-        if (inventory == null) return;
+        if (totalScore >= 100 && !triggered100)
+            triggered100 = true;
 
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(inventory.transform.position, searchRadius);
+        if (totalScore >= 300 && !triggered300)
+            triggered300 = true;
+
+        if (totalScore >= 600 && !triggered600)
+            triggered600 = true;
     }
 }
