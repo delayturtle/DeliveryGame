@@ -139,11 +139,14 @@ public class VehicleController : MonoBehaviour
         // Don't play screech if below minimum speed
         if (currentSpeed < minSpeedForScreech)
         {
-            tireScreechAudioSource.volume = Mathf.Lerp(
+            float newVolume = Mathf.Lerp(
                 tireScreechAudioSource.volume, 
                 0f, 
                 Time.deltaTime * screechVolumeSmoothSpeed
             );
+            
+            // Clamp and validate before setting
+            tireScreechAudioSource.volume = Mathf.Clamp01(newVolume);
             return;
         }
 
@@ -172,11 +175,23 @@ public class VehicleController : MonoBehaviour
             targetVolume = Mathf.Lerp(minScreechVolume, 1f, skidIntensity);
         }
 
-        tireScreechAudioSource.volume = Mathf.Lerp(
+        // Calculate new volume with lerp
+        float lerpedVolume = Mathf.Lerp(
             tireScreechAudioSource.volume, 
             targetVolume, 
             Time.deltaTime * screechVolumeSmoothSpeed
         );
+
+        // IMPORTANT: Clamp and validate the volume to prevent NaN/Infinity
+        lerpedVolume = Mathf.Clamp01(lerpedVolume);
+        
+        // Extra safety check to ensure it's a valid number
+        if (float.IsNaN(lerpedVolume) || float.IsInfinity(lerpedVolume))
+        {
+            lerpedVolume = 0f;
+        }
+
+        tireScreechAudioSource.volume = lerpedVolume;
     }
 
     void Move()
