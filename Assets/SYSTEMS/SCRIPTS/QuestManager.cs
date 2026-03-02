@@ -38,6 +38,21 @@ public class QuestManager : MonoBehaviour
     [Header("Score Milestones")]
     public List<ScoreMilestone> scoreMilestones = new List<ScoreMilestone>();
 
+    // =====================================================
+    // MANUAL OBJECTIVE OVERRIDE (INSPECTOR FRIENDLY)
+    // =====================================================
+
+    [Header("Manual Override Settings")]
+    [TextArea]
+    public string manualOverrideText;
+    public Transform manualOverrideTarget;
+
+    private bool objectiveOverrideActive = false;
+    private string overrideObjectiveText;
+    private Transform overrideTarget;
+
+    // =====================================================
+
     private TruckInventory inventory;
     private PlayerCompassArrow compassArrow;
     private FloatingArrow worldArrow;
@@ -82,11 +97,78 @@ public class QuestManager : MonoBehaviour
         UpdateScoreUI();
     }
 
+// PUBLIC SCORE ADDER (for special events)
+public void AddScore(int amount)
+{
+    totalScore += amount;
+    totalScore = Mathf.Clamp(totalScore, 0, maxScore);
+
+    UpdateScoreUI();
+    CheckScoreMilestones();
+}
+
     void Update()
     {
         UpdatePlayerReference();
+
+        if (objectiveOverrideActive)
+        {
+            UpdateOverrideUI();
+            return;
+        }
+
         HandleQuestState();
         UpdateArrowTargets();
+    }
+
+    // =====================================================
+    // PUBLIC OVERRIDE METHODS
+    // =====================================================
+
+    // Full override (can be called via code)
+    public void OverrideObjective(string newObjective, Transform newTarget)
+    {
+        objectiveOverrideActive = true;
+        overrideObjectiveText = newObjective;
+        overrideTarget = newTarget;
+
+        UpdateOverrideUI();
+
+        Debug.Log("Objective overridden: " + newObjective);
+    }
+
+    // Inspector-friendly version (for UnityEvents)
+    public void TriggerManualOverride()
+    {
+        OverrideObjective(manualOverrideText, manualOverrideTarget);
+    }
+
+    public void ClearObjectiveOverride()
+    {
+        objectiveOverrideActive = false;
+        overrideObjectiveText = "";
+        overrideTarget = null;
+
+        Debug.Log("Objective override cleared.");
+    }
+
+    void UpdateOverrideUI()
+    {
+        if (!objectiveOverrideActive)
+            return;
+
+        // Auto-clear if target destroyed
+        if (overrideTarget == null)
+        {
+            ClearObjectiveOverride();
+            return;
+        }
+
+        if (questText != null)
+            questText.text = overrideObjectiveText;
+
+        compassArrow?.SetTarget(overrideTarget);
+        worldArrow?.SetTarget(overrideTarget);
     }
 
     // =====================================================
@@ -100,7 +182,6 @@ public class QuestManager : MonoBehaviour
 
         UpdateScoreUI();
 
-        // Optional: reset milestones if score drops below them
         foreach (var milestone in scoreMilestones)
         {
             if (totalScore < milestone.requiredScore)
@@ -129,7 +210,6 @@ public class QuestManager : MonoBehaviour
         if (currentPlayerTransform == null)
         {
             inventory = null;
-
             compassArrow?.gameObject.SetActive(false);
             worldArrow?.gameObject.SetActive(false);
             return;

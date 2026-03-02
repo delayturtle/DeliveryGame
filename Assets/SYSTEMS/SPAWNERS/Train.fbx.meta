@@ -3,7 +3,37 @@ guid: c9eaa46acc197c1418c40983392d7956
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lights
+    second: {fileID: 2100000, guid: f69d3eb10dee98a48bdfcc7fd4d1d72b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Train Window
+    second: {fileID: 2100000, guid: 45da8c1d3b3ddd143bc845732a81d9fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TrainW2
+    second: {fileID: 2100000, guid: eceaf794d783cbd429700f123a855fc3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TrainW3
+    second: {fileID: 2100000, guid: 50bd8cfdd7c8a2e45ae68edbfd03188b, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlas (10)
+    second: {fileID: 2800000, guid: 794f3b5cf42eb8343879194eadf60c8d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlas (5)
+    second: {fileID: 2800000, guid: 0223c782d0af9a94aa9be4c06819b943, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
