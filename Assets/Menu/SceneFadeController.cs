@@ -34,6 +34,13 @@ public class SceneFadeController : MonoBehaviour
             yield return null;
         }
 
+        // Ensure fully faded
         musicSource.volume = 0f;
+
+        // Small buffer so player sees full black
+        yield return new WaitForSeconds(0.2f);
+
+        // Load next scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Mock city");
     }
 }
