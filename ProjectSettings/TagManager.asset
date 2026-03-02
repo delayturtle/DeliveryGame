@@ -13,6 +13,8 @@ TagManager:
   - Package
   - DeliveryPoint
   - PowerAudio
+  - MATTERBABY
+  - FINALPOINT
   layers:
   - Default
   - TransparentFX

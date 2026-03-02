@@ -5076,16 +5076,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c3e98798c109949ba68884a934dd1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 5
+  duration: 7.5
   affectedTags:
   - Player
   - Enemy
   - Vehicle
   - PhysicsObject
   vehicleTags: []
-  upwardPull: 14
+  upwardPull: 28
   velocityResistance: 0.6
-  maxUpwardAcceleration: 16
+  maxUpwardAcceleration: 24
   vehiclePullMultiplier: 0.4
   angularDamping: 1.2
   liftKickVelocity: 2.5
