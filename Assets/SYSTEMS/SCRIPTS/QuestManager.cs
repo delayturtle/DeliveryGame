@@ -1,6 +1,17 @@
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.Events;
+
+[System.Serializable]
+public class ScoreMilestone
+{
+    public string name;
+    public int requiredScore;
+    public UnityEvent onReached;
+
+    [HideInInspector] public bool triggered;
+}
 
 public class QuestManager : MonoBehaviour
 {
@@ -17,17 +28,15 @@ public class QuestManager : MonoBehaviour
     [Header("Delivery Points")]
     public List<DeliveryPoint> allDeliveryPoints = new List<DeliveryPoint>();
 
-public int GetScore()
-{
-    return totalScore;
-}
-
     [Header("Arrow Prefabs")]
     public GameObject compassArrowPrefab;
     public GameObject worldArrowPrefab;
 
     [Header("Score Settings")]
     public int maxScore = 45000;
+
+    [Header("Score Milestones")]
+    public List<ScoreMilestone> scoreMilestones = new List<ScoreMilestone>();
 
     private TruckInventory inventory;
     private PlayerCompassArrow compassArrow;
@@ -41,9 +50,10 @@ public int GetScore()
     private GameObject currentTargetPackage;
     private int totalScore = 0;
 
-    private bool triggered100 = false;
-    private bool triggered300 = false;
-    private bool triggered600 = false;
+    public int GetScore()
+    {
+        return totalScore;
+    }
 
     void OnEnable()
     {
@@ -90,6 +100,13 @@ public int GetScore()
 
         UpdateScoreUI();
 
+        // Optional: reset milestones if score drops below them
+        foreach (var milestone in scoreMilestones)
+        {
+            if (totalScore < milestone.requiredScore)
+                milestone.triggered = false;
+        }
+
         Debug.Log("Respawn penalty applied.");
     }
 
@@ -113,12 +130,8 @@ public int GetScore()
         {
             inventory = null;
 
-            if (compassArrow != null)
-                compassArrow.gameObject.SetActive(false);
-
-            if (worldArrow != null)
-                worldArrow.gameObject.SetActive(false);
-
+            compassArrow?.gameObject.SetActive(false);
+            worldArrow?.gameObject.SetActive(false);
             return;
         }
 
@@ -244,6 +257,19 @@ public int GetScore()
         HandleQuestState();
     }
 
+    void CheckScoreMilestones()
+    {
+        foreach (var milestone in scoreMilestones)
+        {
+            if (!milestone.triggered && totalScore >= milestone.requiredScore)
+            {
+                milestone.triggered = true;
+                milestone.onReached?.Invoke();
+                Debug.Log("Milestone reached: " + milestone.name);
+            }
+        }
+    }
+
     void UpdateDeliveryQuestText()
     {
         if (questText == null) return;
@@ -313,17 +339,5 @@ public int GetScore()
         }
 
         return closest;
-    }
-
-    void CheckScoreMilestones()
-    {
-        if (totalScore >= 100 && !triggered100)
-            triggered100 = true;
-
-        if (totalScore >= 300 && !triggered300)
-            triggered300 = true;
-
-        if (totalScore >= 600 && !triggered600)
-            triggered600 = true;
     }
 }
