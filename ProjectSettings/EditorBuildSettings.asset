@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Jordan's Testing Ground.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Main menu.unity
+    guid: 989a12831823633439f79ee6b4450017
+  - enabled: 1
+    path: Assets/Scenes/Mock city.unity
+    guid: 15a62a61e3c7bf54fbbeffe48123e019
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -13,6 +13,7 @@ TagManager:
   - Package
   - DeliveryPoint
   - PowerAudio
+  - Recorder
   layers:
   - Default
   - TransparentFX
