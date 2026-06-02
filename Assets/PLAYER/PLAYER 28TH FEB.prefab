@@ -5301,7 +5301,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1121646850204797319}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000014712332, y: 0.000000028371549, z: -3.468755e-16, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -19262,6 +19262,7 @@ GameObject:
   - component: {fileID: 1946809195046626572}
   - component: {fileID: 6092342771634642201}
   - component: {fileID: 6425085008553110890}
+  - component: {fileID: 484891303215470544}
   m_Layer: 3
   m_Name: CargoZone
   m_TagString: Untagged
@@ -19318,6 +19319,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   packagesInTruck: []
+--- !u!114 &484891303215470544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3391739710621312052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d979e9d09bcbe74ca6343b647b8adf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  questManager: {fileID: 0}
+  scoreReward: 9000
+  overrideObjectiveText: RETURN TO SENDER
+  finalPointTag: FINALPOINT
 --- !u!1 &3422992465048349561
 GameObject:
   m_ObjectHideFlags: 3
@@ -19343,7 +19360,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3422992465048349561}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000014712332, y: 0.000000028371549, z: -3.468755e-16, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -27572,7 +27589,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4065935649314515243}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000014712332, y: 0.000000028371549, z: -3.468755e-16, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -32934,7 +32951,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BindingMode: 1
-  m_FollowOffset: {x: 0, y: 5.03, z: -12}
+  m_FollowOffset: {x: 0, y: -0.2499794, z: -9.000019}
   m_XDamping: 1.2
   m_YDamping: 0.8
   m_ZDamping: 0.2
@@ -33114,7 +33131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BindingMode: 1
-  m_FollowOffset: {x: 0, y: 5.03, z: -12}
+  m_FollowOffset: {x: 0, y: -0.2499794, z: -9.000019}
   m_XDamping: 0.1
   m_YDamping: 0.1
   m_ZDamping: 0.1
@@ -42144,7 +42161,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BindingMode: 1
-  m_FollowOffset: {x: 0, y: 5.03, z: -12}
+  m_FollowOffset: {x: 0, y: -0.2499794, z: -9.000019}
   m_XDamping: 0.1
   m_YDamping: 0.1
   m_ZDamping: 0.1
@@ -42241,7 +42258,7 @@ Transform:
   m_GameObject: {fileID: 6672278554444515138}
   serializedVersion: 2
   m_LocalRotation: {x: 0.09452839, y: 0.5962935, z: 0.07100009, w: -0.79401356}
-  m_LocalPosition: {x: -0.61985344, y: 3.8599436, z: -288.3316}
+  m_LocalPosition: {x: -12.051489, y: 6.1210594, z: -321.8875}
   m_LocalScale: {x: 0.60135895, y: 0.60135907, z: 0.60135895}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -45566,7 +45583,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 2290
+  m_VersionIndex: 2302
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -48928,7 +48945,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 2290
+  m_VersionIndex: 2302
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -66224,7 +66241,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 2290
+  m_VersionIndex: 2302
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -66569,8 +66586,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9010358762392633476}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -246.29999, y: -154.89996, z: -438.49994}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -265.31, y: -158.66, z: -494.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -70175,7 +70192,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 2290
+  m_VersionIndex: 2302
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
