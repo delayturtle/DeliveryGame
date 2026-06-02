@@ -8,9 +8,8 @@ public class TagGunItem : Item
     public LayerMask hitMask;
     public string[] validTags;
 
-    [Header("Fire Point")]
-    public Transform firePoint;
-    public string firePointName = "FirePoint";
+    [Header("Laser")]
+    public float laserHeightOffset = 1.5f;
 
     private Rigidbody vehicleRb;
     private LineRenderer lineRenderer;
@@ -18,14 +17,9 @@ public class TagGunItem : Item
     void Start()
     {
         vehicleRb = GetComponentInParent<Rigidbody>();
+       
         lineRenderer = GetComponent<LineRenderer>();
-
-        if (firePoint == null)
-        {
-            Transform found = transform.Find(firePointName);
-            if (found != null)
-                firePoint = found;
-        }
+        
 
         if (lineRenderer != null)
         {
@@ -33,7 +27,7 @@ public class TagGunItem : Item
             lineRenderer.positionCount = 2;
         }
     }
-
+  
     void Update()
     {
         UpdateLaser();
@@ -41,14 +35,17 @@ public class TagGunItem : Item
 
     void UpdateLaser()
     {
-        if (lineRenderer == null || Camera.main == null)
+        if (vehicleRb == null || lineRenderer == null || Camera.main == null)
             return;
 
-        Vector3 origin = GetFireOrigin();
-        Vector3 targetPoint = GetCameraTargetPoint();
-        Vector3 direction = (targetPoint - origin).normalized;
+        Transform vehicleTransform = vehicleRb.transform;
+
+        Vector3 origin = vehicleTransform.position + Vector3.up * laserHeightOffset;
+        
+        Vector3 direction = Camera.main.transform.forward;
 
         RaycastHit hit;
+
         Vector3 endPoint = origin + direction * range;
 
         if (Physics.Raycast(origin, direction, out hit, range, hitMask))
@@ -60,14 +57,15 @@ public class TagGunItem : Item
         lineRenderer.SetPosition(1, endPoint);
     }
 
-    public override void UseItem(Vector3 _)
+    public override void UseItem(Vector3 direction)
     {
-        if (Camera.main == null)
+        if (vehicleRb == null)
             return;
 
-        Vector3 origin = GetFireOrigin();
-        Vector3 targetPoint = GetCameraTargetPoint();
-        Vector3 direction = (targetPoint - origin).normalized;
+        Transform vehicleTransform = vehicleRb.transform;
+
+        Vector3 origin = vehicleTransform.position + Vector3.up * laserHeightOffset;
+        direction = direction.normalized;
 
         RaycastHit hit;
 
@@ -84,30 +82,6 @@ public class TagGunItem : Item
 
         ClearActiveItem();
         Destroy(gameObject);
-    }
-
-    Vector3 GetCameraTargetPoint()
-    {
-        Ray camRay = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-        RaycastHit camHit;
-
-        if (Physics.Raycast(camRay, out camHit, range, hitMask))
-        {
-            return camHit.point;
-        }
-
-        return camRay.origin + camRay.direction * range;
-    }
-
-    Vector3 GetFireOrigin()
-    {
-        if (firePoint != null)
-            return firePoint.position;
-
-        if (vehicleRb != null)
-            return vehicleRb.transform.position;
-
-        return transform.position;
     }
 
     bool IsValidTag(string tagToCheck)
@@ -130,37 +104,11 @@ public class TagGunItem : Item
 
     void ClearActiveItem()
     {
-        if (vehicleRb == null) return;
-
         UseItemController controller =
             vehicleRb.GetComponentInChildren<UseItemController>();
 
         if (controller != null)
             controller.ActiveItem = null;
     }
-
-    // -----------------------------
-    // Gizmo (Selected Only)
-    // -----------------------------
-    void OnDrawGizmosSelected()
-    {
-        if (Camera.main == null)
-            return;
-
-        Vector3 origin = firePoint != null ? firePoint.position : transform.position;
-        Vector3 targetPoint = GetCameraTargetPoint();
-        Vector3 direction = (targetPoint - origin).normalized;
-
-        RaycastHit hit;
-        Vector3 endPoint = origin + direction * range;
-
-        if (Physics.Raycast(origin, direction, out hit, range, hitMask))
-        {
-            endPoint = hit.point;
-        }
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(origin, endPoint);
-        Gizmos.DrawSphere(endPoint, 0.3f);
-    }
+    
 }
